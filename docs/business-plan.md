@@ -1,14 +1,10 @@
 # RehabYangu – Business Plan
-
 **Version:** 0.1  
-**Owner:** Product Owner / CTO  
-**Status:** Draft  
+**Owner:** Product Owner  
+**Status:** On Review  
 **Last Updated:** 2026-07-11  
 
----
-
 ## 1. Executive Summary
-
 RehabYangu is a **multi-tenant, white-label SaaS platform** designed specifically for rehabilitation centres, psychiatric hospitals, addiction treatment facilities, and mental health organisations across Africa.
 
 The platform is a complete digital operating system for behavioural healthcare – managing patients, clinical documentation, pharmacy, billing, sponsors, inventory, reporting, and compliance.
@@ -33,22 +29,16 @@ The platform is a complete digital operating system for behavioural healthcare �
 - Scale to 20+ facilities by Year 2, and 100+ by Year 5.
 - Become the most trusted behavioural healthcare platform in Africa.
 
----
-
 ## 2. Mission & Vision
-
 **Mission:**  
 *To empower rehabilitation centres across Africa with technology that enables safer, more efficient, and more connected patient care.*
 
 **Vision:**  
 *To become the continent's most trusted digital operating system for behavioural healthcare.*
 
----
 
 ## 3. Market Analysis
-
 ### 3.1 Market Overview
-
 | Metric | Estimate |
 |--------|----------|
 | Rehabilitation centres in Kenya | 50+ |
@@ -58,7 +48,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | Digital adoption trend | Increasing (post-COVID) |
 
 ### 3.2 Customer Pain Points
-
 | Pain Point | Description |
 |------------|-------------|
 | **Paper-based records** | Lost documents, illegible handwriting, inefficient retrieval |
@@ -69,18 +58,14 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Reporting delays** | Manual compilation of reports takes days |
 
 ### 3.3 Market Trends
-
 - **Increased mental health awareness** – more people seeking treatment.
 - **Government focus** – Kenya's Mental Health Policy (2020) emphasises improved services.
 - **Digital transformation** – healthcare facilities modernising operations.
 - **Sponsorship model growth** – employers and NGOs increasingly pay for treatment.
 
----
 
 ## 4. Target Customers
-
 ### Primary Segments
-
 | Segment | Description | Number (Kenya) |
 |---------|-------------|----------------|
 | **Rehabilitation Centres** | Addiction and substance abuse treatment | 30+ |
@@ -89,7 +74,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Recovery Organisations** | Faith-based and community recovery | 15+ |
 
 ### Expansion Targets
-
 | Region | Facilities | Timeline |
 |--------|------------|----------|
 | Kenya | 50+ | Year 1–2 |
@@ -97,12 +81,9 @@ The platform is a complete digital operating system for behavioural healthcare �
 | Tanzania | 30+ | Year 3–4 |
 | Rwanda / Ethiopia | 50+ | Year 4–5 |
 
----
 
 ## 5. Competitive Landscape
-
 ### 5.1 Competitors
-
 | Competitor | Type | Strengths | Weaknesses |
 |------------|------|-----------|------------|
 | **OpenMRS** | Open-source EMR | Free, widely used | Complex, not specialised for rehab |
@@ -111,7 +92,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Local Software Houses** | Custom-built | Sometimes cheaper | Often low quality, no support |
 
 ### 5.2 RehabYangu's Differentiators
-
 | Differentiator | Description |
 |----------------|-------------|
 | **Specialisation** | Built specifically for rehab and mental health |
@@ -122,12 +102,9 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Local Support** | In‑country implementation and training |
 | **Mobile Responsive** | Works on phones, tablets, and desktops |
 
----
 
 ## 6. Pricing Strategy
-
 ### 6.1 Subscription Tiers
-
 | Tier | Price (KES / Month) | Price (USD / Month) | Features |
 |------|---------------------|---------------------|----------|
 | **Starter** | 10,000 – 20,000 | $75 – $150 | Core registration, admission, billing, basic reports |
@@ -136,7 +113,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Custom** | Custom | Custom | White‑labelled, on‑premise option, custom integrations |
 
 ### 6.2 Implementation & Onboarding Fees
-
 | Service | Fee (KES) | Fee (USD) |
 |---------|-----------|-----------|
 | Basic Implementation | 50,000 | $375 |
@@ -145,7 +121,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | Data Migration | 50,000 – 100,000 | $375 – $750 |
 
 ### 6.3 Premium Add‑Ons (Phase 2/3)
-
 | Add‑On | Description | Price |
 |--------|-------------|-------|
 | Advanced Analytics | AI‑powered insights and predictive reports | +20% of subscription |
@@ -153,12 +128,9 @@ The platform is a complete digital operating system for behavioural healthcare �
 | Mobile App | Native mobile application | +15% of subscription |
 | HL7/FHIR Integration | Interoperability with other systems | Custom |
 
----
 
 ## 7. Revenue Model
-
 ### 7.1 Revenue Streams
-
 | Stream | Description | Expected % |
 |--------|-------------|------------|
 | **Monthly Subscriptions** | Recurring revenue from facilities | 60% |
@@ -170,7 +142,6 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Enterprise Support** | SLA‑based premium support | 2% |
 
 ### 7.2 Projected Revenue (Year 1–5)
-
 | Year | Facilities | Avg Subscription | Annual Revenue (KES) | Annual Revenue (USD) |
 |------|------------|------------------|----------------------|----------------------|
 | Year 1 | 5 – 10 | KES 30,000 | KES 2.5M – 5M | $18k – $37k |
@@ -184,12 +155,9 @@ The platform is a complete digital operating system for behavioural healthcare �
 - Implementation fees and training add 20–30% in Year 1.
 - Premium module adoption increases in Year 3+.
 
----
 
 ## 8. Go‑to‑Market Strategy
-
 ### 8.1 Phase 1: Kenya Launch (Year 1)
-
 **Anchor Customer: Serenity Place Treatment Center**
 - Co‑develop the platform with real‑world feedback.
 - Build a reference case study.
@@ -205,21 +173,17 @@ The platform is a complete digital operating system for behavioural healthcare �
 - Healthcare conferences and workshops.
 
 ### 8.2 Phase 2: East Africa Expansion (Year 2–3)
-
 - Localise for Uganda, Tanzania.
 - Partner with regional healthcare bodies.
 - Hire local sales representatives.
 
 ### 8.3 Phase 3: Pan‑Africa Scale (Year 4–5)
-
 - Expand to West and Southern Africa.
 - Offer multilingual support (French, Portuguese).
 - Develop deeper integrations with local payment systems.
 
----
 
 ## 9. Growth Roadmap
-
 ### Year 1
 - Launch with Serenity Place.
 - Onboard 5–10 facilities.
@@ -246,12 +210,8 @@ The platform is a complete digital operating system for behavioural healthcare �
 - Enter Southern Africa (South Africa, Zambia).
 - Become the market leader.
 
----
-
 ## 10. Financial Projections
-
 ### 10.1 Year 1 Costs (Estimated)
-
 | Cost Category | KES | USD |
 |---------------|-----|-----|
 | **Development** (Team, contractors) | 3M – 5M | $22k – $37k |
@@ -260,16 +220,13 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Support & Training** | 500k – 1M | $3.7k – $7.5k |
 | **Legal & Compliance** | 200k – 500k | $1.5k – $3.7k |
 | **Total** | **4.7M – 8.5M** | **$35k – $63k** |
+These estimations are yet to be confirmed and analyzed 
 
 ### 10.2 Break‑Even Analysis
-
 - **Break‑even point:** 10–15 facilities on Professional plan.
 - **Estimated timeline:** 12–18 months from launch.
 
----
-
 ## 11. Key Risks & Mitigations
-
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
 | **Slow customer adoption** | Medium | High | Strong anchor customer; case study; referral program |
@@ -280,20 +237,16 @@ The platform is a complete digital operating system for behavioural healthcare �
 | **Cash flow challenges** | Medium | High | Secure initial funding; annual subscription discounts |
 | **Staff turnover** | Medium | Medium | Good documentation; knowledge transfer |
 
----
 
 ## 12. Funding Needs (If Applicable)
-
 | Scenario | Amount | Use |
 |----------|--------|-----|
 | **Bootstrapped** | KES 2M – 4M | Development and launch |
 | **Seed Investment** | KES 8M – 15M | Development, team, marketing |
 | **Series A** | KES 30M – 50M | Expansion across East Africa |
 
----
 
 ## 13. Success Metrics
-
 | Metric | Year 1 | Year 3 | Year 5 |
 |--------|--------|--------|--------|
 | Number of facilities | 5–10 | 50–70 | 120–150 |
@@ -302,13 +255,11 @@ The platform is a complete digital operating system for behavioural healthcare �
 | Market share (Kenya) | 10% | 40% | 60% |
 | Time to implement | 1–2 weeks | < 1 week | < 3 days |
 
----
 
 ## 14. Change Log
-
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-07-11 | CTO | Initial draft. |
+| 0.1 | 2026-07-11 | Product Owner | Initial draft. |
 
 ---
 
