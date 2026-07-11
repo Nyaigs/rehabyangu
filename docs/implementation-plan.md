@@ -1,23 +1,17 @@
 # RehabYangu – Implementation Plan
-
 **Version:** 0.1  
-**Owner:** CTO / Engineering Lead  
-**Status:** Draft  
+**Owner:** Engineering Lead  
+**Status:** On Review  
 **Last Updated:** 2026-07-11  
 
----
-
 ## 1. Purpose
-
 This document defines the **phased roadmap, development sprints, team structure, and milestones** for building RehabYangu. It translates the Product Requirements (PRD), Technical Requirements (TRD), and User Journey documents into a **realistic, actionable plan** that the team can execute.
 
 - **Audience:** Engineering team, product owners, stakeholders.
 - **Goal:** Deliver a production‑ready MVP for Serenity Place within 12 weeks.
 
----
 
 ## 2. Development Philosophy
-
 | Principle | Description |
 |-----------|-------------|
 | **MVP First** | Build the core features first; deliver value early. |
@@ -27,12 +21,9 @@ This document defines the **phased roadmap, development sprints, team structure,
 | **Test Driven** | Tests written alongside code. |
 | **Documentation** | Code is documented; APIs have OpenAPI specs. |
 
----
 
 ## 3. Team Structure
-
 ### 3.1 Core Team (MVP Phase)
-
 | Role | Count | Responsibility |
 |------|-------|----------------|
 | **Product Owner** | 1 (Brian/Nyaigotti) | Prioritise features, approve decisions |
@@ -46,7 +37,6 @@ This document defines the **phased roadmap, development sprints, team structure,
 **Total:** ~8–9 core team members.
 
 ### 3.2 Extended Team (Phase 2+)
-
 | Role | Count | When |
 |------|-------|------|
 | **Mobile Developer** | 1–2 | Phase 2 |
@@ -54,14 +44,10 @@ This document defines the **phased roadmap, development sprints, team structure,
 | **Customer Support** | 1–2 | Post‑launch |
 | **Implementation Specialist** | 1–2 | Onboarding new tenants |
 
----
 
 ## 4. Phased Roadmap
-
 ### Phase 0: Foundation & Setup (Weeks 1–2)
-
 **Goal:** Establish infrastructure, tooling, and team alignment.
-
 | Week | Activities | Deliverables |
 |------|------------|--------------|
 | Week 1 | Finalise PRD, TRD, UI/UX Brief. Set up GitHub repo, project board. Initial environment setup (Docker, PostgreSQL, Django). | All docs approved. Dev environment running locally. |
@@ -72,14 +58,11 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Confirm technology stack (Django + React + PostgreSQL).
 - Set up project management tool (GitHub Projects / Trello / Jira).
 
----
 
 ### Phase 1: Core MVP (Weeks 3–10)
-
 **Goal:** Deliver a working product with core features for Serenity Place.
 
 #### Sprint 1: Authentication & User Management (Weeks 3–4)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | User Registration | Backend | Self‑registration with admin approval workflow |
@@ -95,10 +78,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Roles and permissions enforced.
 - Audit logs generated for sensitive actions.
 
----
 
 #### Sprint 2: Patient Management & Admissions (Weeks 5–6)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | Patient Registration | Full‑stack | Registration form with demographics, photo upload, sponsor info |
@@ -112,10 +93,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Beds are allocated and tracked.
 - Search and list working.
 
----
 
 #### Sprint 3: EMR & Clinical Documentation (Weeks 6–7)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | Clinical Notes | Full‑stack | Free‑text notes for clinicians |
@@ -130,10 +109,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Vitals can be recorded, viewed, and trended.
 - Abnormal vitals highlighted in red.
 
----
 
 #### Sprint 4: Pharmacy & MAR (Weeks 7–8)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | Drug Inventory | Full‑stack | Add, update, list drugs with batch/expiry |
@@ -147,10 +124,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 - MAR can be recorded and printed.
 - Stock and expiry alerts work.
 
----
 
 #### Sprint 5: Billing & Finance (Weeks 8–9)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | Automatic Charging | Backend | Services automatically charge patients |
@@ -165,10 +140,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Payments recorded and receipts generated.
 - Sponsor statements available.
 
----
 
 #### Sprint 6: Discharge & Reports (Weeks 9–10)
-
 | Task | Owner | Description |
 |------|-------|-------------|
 | Discharge Workflow | Full‑stack | Clinical summary, pharmacy/billing/finance confirmation |
@@ -185,12 +158,9 @@ This document defines the **phased roadmap, development sprints, team structure,
 - Core reports generated.
 - Dashboard showing key metrics.
 
----
 
 ### Phase 2: Extended Features (Weeks 11–16)
-
 **Goal:** Add missing modules and enhance the platform.
-
 | Module | Priority | Description |
 |--------|----------|-------------|
 | **Laboratory** | High | Test requests, sample collection, results entry |
@@ -200,10 +170,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 | **Notifications (Email/SMS)** | High | In‑app, email, and SMS notifications |
 | **M‑Pesa Integration** | Medium | Payment gateway integration |
 
----
 
 ### Phase 3: Scaling & Advanced Features (Weeks 17–24)
-
 | Module | Priority | Description |
 |--------|----------|-------------|
 | **AI‑Powered Insights** | Low | Predictive analytics, relapse risk, outcome prediction |
@@ -213,10 +181,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 | **Multi‑Tenant Scaling** | High | Performance optimisation, horizontal scaling |
 | **Advanced Analytics** | Medium | Custom dashboards, data visualisation |
 
----
 
 ## 5. Milestones & Timeline
-
 | Milestone | Target Date | Deliverable |
 |-----------|-------------|-------------|
 | **M0: Documentation Complete** | Week 2 | All six documents approved |
@@ -226,10 +192,8 @@ This document defines the **phased roadmap, development sprints, team structure,
 | **M4: Phase 2** | Week 16 | Laboratory, consumables, notifications |
 | **M5: Production Scale** | Week 24 | Scaling, performance optimisation, advanced features |
 
----
 
 ## 6. Sprint Cadence
-
 - **Sprint Length:** 2 weeks
 - **Planning:** Monday of Week 1
 - **Review:** Friday of Week 2
@@ -237,7 +201,6 @@ This document defines the **phased roadmap, development sprints, team structure,
 - **Stand‑up:** Daily (15 minutes)
 
 ### Sprint Structure
-
 | Day | Activity |
 |-----|----------|
 | Monday | Sprint planning (2 hours) |
@@ -246,19 +209,14 @@ This document defines the **phased roadmap, development sprints, team structure,
 | Monday–Thursday (Week 2) | Development + daily stand‑up |
 | Friday (Week 2) | Sprint review + retrospective |
 
----
 
 ## 7. Development Workflow
-
 ### Git Workflow
-
 main (production)
 └── develop (integration)
 ├── feature/xxx (new features)
 ├── bugfix/xxx (bug fixes)
 └── release/xxx (release preparation)
-text
-
 
 **Branch Naming:**
 - `feature/patient-registration`
@@ -275,10 +233,8 @@ text
 7. Deploy to staging.
 8. Release to `main` (production) on approval.
 
----
 
 ## 8. Testing Strategy
-
 | Test Level | Scope | Frequency | Tools |
 |------------|-------|-----------|-------|
 | **Unit Tests** | Models, serializers, business logic | Every PR | Django Test, pytest |
@@ -290,12 +246,9 @@ text
 
 **Goal:** 80%+ test coverage for business‑critical modules.
 
----
 
 ## 9. Deployment Strategy
-
 ### Environments
-
 | Environment | Purpose | Access |
 |-------------|---------|--------|
 | **Development** | Local development | Developers only |
@@ -303,21 +256,17 @@ text
 | **Production** | Live system | Customers |
 
 ### Deployment Frequency
-
 | Environment | Frequency | Trigger |
 |-------------|-----------|---------|
 | **Staging** | Daily | Automatic on PR merge |
 | **Production** | Weekly | Manual approval |
 
 ### Rollback Plan
-
 - Rollback via GitHub revert + re‑deploy previous Docker image.
 - Database rollback requires backup restoration (RPO: 15 minutes).
 
----
 
 ## 10. Risk Register
-
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|------------|
 | **Key developer leaves** | Medium | High | Cross‑training; good documentation |
@@ -327,10 +276,8 @@ text
 | **Security breach** | Low | Catastrophic | Zero trust; security audits; encryption |
 | **Customer adoption** | Medium | High | Early customer involvement (Serenity Place) |
 
----
 
 ## 11. Success Criteria for MVP
-
 | Metric | Target |
 |--------|--------|
 | **System uptime** | 99.9% |
@@ -342,10 +289,8 @@ text
 | **Bugs** | 0 critical bugs; < 10 high‑priority bugs |
 | **Test coverage** | > 80% for critical modules |
 
----
 
 ## 12. Tools & Software
-
 | Category | Tool |
 |----------|------|
 | **Version Control** | GitHub |
@@ -357,15 +302,11 @@ text
 | **Development Environment** | Docker + Docker Compose |
 | **Design** | Figma |
 
----
 
 ## 13. Change Log
-
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-07-11 | CTO | Initial draft. |
+| 0.1 | 2026-07-11 | Engineering Lead | Initial draft. |
 
----
-
-**Status:** DRAFT – Ready for review by Product Owners and technical team.
+**Status:** On Review by Product Owners and technical team.
 
