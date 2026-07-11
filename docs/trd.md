@@ -1,27 +1,21 @@
 # RehabYangu – Technical Requirements Document (TRD)
-
 **Version:** 0.1  
-**Owner:** CTO / Principal Architect  
-**Status:** Draft  
+**Owner:** Product Architect  
+**Status:** On Review  
 **Last Updated:** 2026-07-11  
 
----
 
 ## 1. Purpose
-
 This document defines the technical architecture, design decisions, and implementation strategy for RehabYangu. It is the bridge between the Product Requirements (PRD) and the actual codebase.
 
 - **Audience:** Developers, DevOps, QA, and technical stakeholders.
 - **Goal:** Ensure that the system is secure, scalable, maintainable, and production‑ready.
 
----
 
 ## 2. Architecture Overview
-
 RehabYangu follows a **modular, service‑oriented architecture** with clear separation of concerns.
 
 ### 2.1 High‑Level Components
-
 ┌─────────────────────────────────────────────────────────────────┐
 │ Frontend (React + TS) │
 │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
@@ -79,22 +73,16 @@ RehabYangu follows a **modular, service‑oriented architecture** with clear sep
 │ External Integrations │
 │ - M‑Pesa API, Email providers, SMS gateways, S3 storage │
 └─────────────────────────────────────────────────────────────────┘
-text
-
 
 ### 2.2 Key Design Principles
-
 - **Separation of Concerns:** Each module has a single responsibility.
 - **API‑First:** All functionality exposed via RESTful APIs.
 - **Stateless:** JWT tokens ensure no server‑side session state (except Redis for caching).
 - **Asynchronous:** Long‑running tasks (PDF generation, emails) are offloaded to Celery.
 
----
 
 ## 3. Technology Stack
-
 ### 3.1 Backend
-
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
 | **Language** | Python 3.11+ | Mature ecosystem, healthcare libraries, rapid development. |
@@ -106,7 +94,6 @@ text
 | **Object Storage** | S3‑compatible (MinIO dev, AWS S3 prod) | Scalable, secure file storage for logos, documents, attachments. |
 
 ### 3.2 Frontend
-
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
 | **Language** | TypeScript 5+ | Type safety, maintainability. |
@@ -119,7 +106,6 @@ text
 | **Forms** | React Hook Form + Zod | Performant, validation with schema. |
 
 ### 3.3 Infrastructure
-
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
 | **Containerization** | Docker + Docker Compose | Consistent dev/prod environments. |
@@ -128,12 +114,9 @@ text
 | **Monitoring** | Prometheus + Grafana + Loki | Metrics, logging, alerting. |
 | **Error Tracking** | Sentry | Real‑time error reporting. |
 
----
 
 ## 4. Multi‑Tenant Architecture
-
 ### 4.1 Strategy: Schema‑per‑tenant
-
 **Decision:** We will use a separate PostgreSQL schema for each tenant (facility).
 
 **Advantages:**
@@ -146,7 +129,6 @@ text
 - Higher connection overhead (we'll use connection pooling).
 
 ### 4.2 Implementation Details
-
 #### Tenant Identification
 Each request must carry a tenant identifier. We will support two methods:
 
@@ -550,4 +532,4 @@ Performance degradation	Load test regularly; scale horizontally.
 Data breach	Regular security audits; zero‑trust design.
 17. Change Log
 Version	Date	Author	Changes
-0.1	2026-07-11	CTO	Initial draft.
+0.1	2026-07-11	Product Architect Initial draft.
