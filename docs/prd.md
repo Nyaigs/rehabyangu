@@ -5,7 +5,6 @@
 **Status:** Draft  
 **Last Updated:** 2026-07-11  
 
----
 
 ## 1. Executive Summary
 
@@ -16,7 +15,6 @@ The platform is built for **scale**, **security**, and **customisation**. Each f
 **Target Launch Customer:** Serenity Place Treatment Center (Kenya).  
 **Long-term Vision:** Pan-African expansion.
 
----
 
 ## 2. Product Vision
 
