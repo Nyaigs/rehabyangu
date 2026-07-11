@@ -130,6 +130,7 @@ RehabYangu follows a **modular, service‑oriented architecture** with clear sep
 
 ### 4.2 Implementation Details
 #### Tenant Identification
+
 Each request must carry a tenant identifier. We will support two methods:
 
 1. **Subdomain:** `tenant_name.rehabyangu.com` (recommended for production).
@@ -213,7 +214,9 @@ python
 class Patient(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     patient_id = models.CharField(max_length=20, unique=True)  # auto-generated
-    first_name, middle_name, last_name
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=10)
     national_id = models.CharField(max_length=20)
@@ -265,6 +268,7 @@ class ClinicalNote(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_archived = models.BooleanField(default=False)
+    
     class Meta:
         abstract = True
 
