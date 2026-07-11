@@ -1,13 +1,11 @@
 # RehabYangu – Product Requirements Document (PRD)
-
 **Version:** 0.1  
 **Owner:** CTO / Product Owner  
-**Status:** Draft  
+**Status:** Approved 
 **Last Updated:** 2026-07-11  
 
 
 ## 1. Executive Summary
-
 RehabYangu is a **multi-tenant, white-label SaaS platform** designed for rehabilitation centres, psychiatric hospitals, addiction treatment facilities, and mental health organisations across Africa. It provides a complete digital operating system for behavioural healthcare – managing patients, clinical documentation, pharmacy, billing, sponsors, inventory, reporting, and compliance.
 
 The platform is built for **scale**, **security**, and **customisation**. Each facility (tenant) experiences a fully branded system with their own logo, name, colours, and document templates – while sharing a unified, secure, multi-tenant backend.
@@ -17,11 +15,9 @@ The platform is built for **scale**, **security**, and **customisation**. Each f
 
 
 ## 2. Product Vision
-
 > *"To become the most trusted behavioural healthcare management platform in Africa, enabling rehabilitation centres to provide safer, more efficient, and more connected patient care."*
 
 ### Core Principles
-
 | Principle | Description |
 |-----------|-------------|
 | **Security First** | Zero-trust architecture, encryption at rest and in transit, immutable audit logs. |
@@ -32,10 +28,7 @@ The platform is built for **scale**, **security**, and **customisation**. Each f
 | **Scalable** | Designed to support hundreds of facilities and tens of thousands of patients. |
 | **API-First** | All functionality exposed via RESTful APIs for future integrations. |
 
----
-
 ## 3. Target Users & Personas
-
 ### Primary Customers
 - Rehabilitation centres
 - Addiction treatment facilities
@@ -58,10 +51,7 @@ The platform is built for **scale**, **security**, and **customisation**. Each f
 - **Cook** – Dietary planning, meal counts (anonymised patient data).
 - **Sponsor** (external) – View statements, payment history, outstanding balances.
 
----
-
 ## 4. Core Modules & Features
-
 Below is the complete feature set for RehabYangu. Features marked **MVP** are part of the initial release. Features marked **Phase 2/3** will be delivered in subsequent releases.
 
 ### 4.1 Authentication & Security (MVP)
@@ -77,7 +67,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Audit Trail | Immutable log of all sensitive actions. | Yes | No |
 
 ### 4.2 User Management (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Staff Accounts | Create, edit, deactivate users. | Yes | No |
@@ -112,7 +101,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Attachments | Upload documents (PDFs, images). | Yes | No |
 
 ### 4.5 Vitals Module (MVP – Critical)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Record Vitals | BP, HR, RR, Temp, SpO2, Blood Sugar, Pain Score. | Yes | No |
@@ -122,7 +110,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Edit Restriction | Vitals cannot be edited after 24 hours. | Yes | No |
 
 ### 4.6 Pharmacy Management (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Drug Inventory | Name, generic, strength, form, batch, supplier, price, stock, expiry. | Yes | No |
@@ -134,7 +121,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Medication Charges | Automatically add to patient bill. | Yes | No |
 
 ### 4.7 Medication Administration Record (MAR) (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | MAR Entry | Medication name, dose, route, frequency, time, status (Given/Missed/Refused/Held). | Yes | No |
@@ -142,7 +128,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Nurse Attribution | Each administration recorded by nurse. | Yes | No |
 
 ### 4.8 Medical Consumables (Phase 2)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Consumables Inventory | Track gloves, syringes, dressings, IV fluids, etc. | Yes | No |
@@ -151,7 +136,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Low Stock Alerts | Notify when stock below minimum. | Yes | **Yes** – threshold configurable |
 
 ### 4.9 Psychiatric Module (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Psychiatric Reviews | Diagnosis update, MSE, medication changes, recommendations. | Yes | No |
@@ -160,7 +144,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Upcoming Reviews Dashboard | Widget showing reviews due in next 7 days. | Yes | No |
 
 ### 4.10 Counseling Module (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Individual Therapy | Session notes, attendance. | Yes | No |
@@ -172,7 +155,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Progress Evaluation | Evaluate patient progress toward goals. | Yes | No |
 
 ### 4.11 Nursing Module (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Nursing Notes (SOAP) | Subjective, Objective, Assessment, Plan. | Yes | No |
@@ -181,7 +163,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Incident Reports | Record and track incidents. | Yes | No |
 
 ### 4.12 Laboratory Module (Phase 2)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Test Requests | Doctor requests tests for patient. | Yes | No |
@@ -191,7 +172,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Downloadable Reports | PDF test reports. | Yes | **Yes** – template configurable |
 
 ### 4.13 Billing & Finance (MVP – Critical)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Automatic Charging | All billable services automatically charged to patient account. | Yes | **Yes** – charges and prices configurable |
@@ -203,7 +183,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Force Discharge | Admin/Director override with reason and password. | Yes | **Yes** – permission configurable |
 
 ### 4.14 Sponsorship Management (MVP)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Sponsor Profiles | Name, contact, payment responsibility. | Yes | No |
@@ -214,7 +193,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Outstanding Balances | Show per sponsor and per patient. | Yes | No |
 
 ### 4.15 Inventory & Stores (Phase 2)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Stock Management | Medical, cleaning, office, and food supplies. | Yes | No |
@@ -223,7 +201,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Stock Reports | Downloadable stock reports. | Yes | **Yes** – template, branding |
 
 ### 4.16 Human Resources (Phase 3)
-
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Staff Records | Employee profiles with photos. | Yes | No |
@@ -233,7 +210,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Performance Reviews | Staff performance evaluation. | Yes | **Yes** – template configurable |
 
 ### 4.17 Reports (MVP – Core)
-
 | Report Type | Format | Description | Multi-Tenant? | Configurable? |
 |-------------|--------|-------------|---------------|---------------|
 | Admissions Report | PDF, Word, Excel | Admissions by date range. | Yes | **Yes** – filters, branding |
@@ -249,7 +225,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Audit Logs | PDF, Excel | All user actions. | Yes | **Yes** – filters |
 
 ### 4.18 Document Generation (MVP – Core)
-
 | Document Type | Format | Description | Multi-Tenant? | Configurable? |
 |---------------|--------|-------------|---------------|---------------|
 | Admission Forms | PDF, Word | Pre-filled with patient data. | Yes | **Yes** – template, branding |
@@ -265,7 +240,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Sponsor Statements | PDF, Word | Sponsor statement. | Yes | **Yes** – template, branding |
 
 ### 4.19 Notifications (MVP – Core)
-
 | Notification Type | Channels | Description | Multi-Tenant? | Configurable? |
 |-------------------|----------|-------------|---------------|---------------|
 | New User Registration | In-app, Email | Notify admins of pending approval. | Yes | No |
@@ -279,7 +253,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | New Admission | In-app | Notify relevant staff. | Yes | **Yes** – configurable |
 
 ### 4.20 Analytics & Dashboards (MVP – Core)
-
 | Dashboard | Description | Multi-Tenant? | Configurable? |
 |-----------|-------------|---------------|---------------|
 | Dashboard Overview | Real-time stats: admissions, occupancy, revenue, alerts. | Yes | No |
@@ -292,7 +265,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Length of Stay | Average stay analysis. | Yes | **Yes** – configurable |
 
 ### 4.21 System Settings (MVP – Critical)
-
 | Setting | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
 | Facility Information | Name, address, logo, contacts. | Yes | **Yes** – per tenant |
@@ -306,10 +278,7 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 | Notification Settings | Enable/disable notifications. | Yes | **Yes** – per tenant |
 | Backup Schedule | Automatic backup frequency. | Yes | **Yes** – per tenant |
 
----
-
 ## 5. Critical Business Rules (Non‑Negotiable)
-
 ### 5.1 Discharge Rules
 
 1. **Standard Discharge:** When a user clicks "Discharge" on a patient, the system **MUST** check the patient's outstanding balance.
@@ -332,7 +301,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
    - Medication administration lists
 
 ### 5.2 Discharge Workflow Steps
-
 1. **Step 1:** Doctor initiates discharge with clinical summary.
 2. **Step 2:** Pharmacy confirms no pending medications to dispense.
 3. **Step 3:** Billing confirms all charges are captured.
@@ -340,7 +308,6 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 5. **Step 5:** Final discharge approved; patient moved to discharged list.
 
 ### 5.3 Medication Quantity Rules
-
 Based on **dosage form**:
 
 | Dosage Form | Quantity Allowed | Example |
@@ -359,7 +326,6 @@ Based on **dosage form**:
 - Input field automatically restricts decimals based on dosage form.
 
 ### 5.4 Invoice Grouping Rules
-
 Invoices **MUST** group charges properly – **NOT** list every single dose separately.
 
 **Correct Grouping:**
@@ -409,10 +375,7 @@ text
 - Vitals visible to: Nurses, Clinical Officers, Psychiatrists, Directors, Super Admins.
 - Vitals **NOT editable** after 24 hours (audit compliance).
 
----
-
 ## 6. Non‑Functional Requirements
-
 | Category | Requirement |
 |----------|-------------|
 | **Performance** | Page load < 3 seconds; API response < 500ms for 95% of requests. |
@@ -426,13 +389,10 @@ text
 | **Responsiveness** | Fully functional on desktop, tablet, and mobile. |
 | **Internationalisation** | Support for English and Swahili (future). |
 
----
-
 ## 7. MVP Scope (Minimum Viable Product)
-
 For the **initial launch at Serenity Place**, the MVP will include:
 
-### ✅ MVP Core (Must Have)
+### MVP Core (Must Have)
 
 - Authentication (registration, login, password reset, admin approval workflow)
 - User Management (roles, permissions, activity logs)
@@ -454,7 +414,7 @@ For the **initial launch at Serenity Place**, the MVP will include:
 - Multi‑tenant Isolation (schema‑per‑tenant)
 - System Settings (facility info, branding, pricing, templates)
 
-### ⏳ Phase 2 (Extended)
+### Phase 2 (Extended)
 
 - Laboratory Module
 - Medical Consumables (full inventory + dispensing)
@@ -463,19 +423,16 @@ For the **initial launch at Serenity Place**, the MVP will include:
 - Inventory & Stores (full supply chain)
 - Telehealth integration (future)
 
-### ⏳ Phase 3 (Advanced)
+### Phase 3 (Advanced)
 
 - AI‑powered insights
 - Predictive analytics
 - Mobile application
 - Advanced integrations (HL7/FHIR, government systems)
 
----
-
 ## 8. Licensing & Subscription
 
 ### 8.1 Subscription Tiers (Recommended)
-
 | Tier | Price (KES / Month) | Features |
 |------|---------------------|----------|
 | **Starter** | 10,000 – 20,000 | Core registration, admission, billing, basic reports |
@@ -486,7 +443,6 @@ For the **initial launch at Serenity Place**, the MVP will include:
 *(Prices to be validated with market research)*
 
 ### 8.2 Subscription States
-
 | State | Description |
 |-------|-------------|
 | **ACTIVE** | Full access |
@@ -504,10 +460,7 @@ For the **initial launch at Serenity Place**, the MVP will include:
 5. Data retained for 90 days after suspension; then archived.
 6. Healthcare data remains protected; facility can export data at any time.
 
----
-
 ## 9. White‑Label Requirements
-
 Each tenant must be able to:
 
 | Customisation | Method |
@@ -523,8 +476,6 @@ Each tenant must be able to:
 
 **Default:** If tenant has not customised, the system shows "RehabYangu" and our logo.
 
----
-
 ## 10. Success Criteria
 
 | Metric | Target |
@@ -537,10 +488,7 @@ Each tenant must be able to:
 | Time to onboard new tenant | < 1 hour (automated) |
 | Revenue | Monthly recurring revenue > KES 1M by Year 2 |
 
----
-
 ## 11. Assumptions & Constraints
-
 | Assumption | Impact |
 |------------|--------|
 | Internet connectivity is available at facilities. | We must support offline mode (future). |
@@ -549,10 +497,7 @@ Each tenant must be able to:
 | English is the primary language. | Swahili support will be added later. |
 | Data protection laws apply. | We must comply with Kenya Data Protection Act. |
 
----
-
 ## 12. Risks & Mitigations
-
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|------------|
 | Data breach | Medium | Catastrophic | Zero trust; regular security audits |
@@ -562,10 +507,7 @@ Each tenant must be able to:
 | Performance issues | Medium | High | Load testing; scalable architecture |
 | Technical debt | High | Medium | Code reviews; refactoring sprints |
 
----
-
 ## 13. Review Checklist
-
 - [ ] Executive Summary reviewed
 - [ ] Product Vision aligned with founders' goals
 - [ ] Target users and personas validated
@@ -577,13 +519,10 @@ Each tenant must be able to:
 - [ ] Success criteria agreed
 - [ ] Risks and mitigations reviewed
 
----
-
 ## 14. Change Log
-
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-07-11 | CTO | Initial draft from Serenity Place prompt + RehabYangu vision |
+| 0.1 | 2026-07-11 | Nyaigotti | Initial RehabYangu vision |
 
 ---
 
