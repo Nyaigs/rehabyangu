@@ -1,14 +1,10 @@
 # RehabYangu – User Journey & Workflow Document
-
 **Version:** 0.1  
-**Owner:** CTO / UX Lead  
-**Status:** Draft  
+**Owner:** UX Lead  
+**Status:** On Reviea  
 **Last Updated:** 2026-07-11  
 
----
-
 ## 1. Purpose
-
 This document describes how different users interact with RehabYangu. It defines:
 
 - User personas and their goals.
@@ -19,94 +15,74 @@ This document describes how different users interact with RehabYangu. It defines
 
 This document serves as the bridge between the Product Requirements (PRD) and the UI/UX Design.
 
----
-
 ## 2. User Personas
-
 ### 2.1 Super Administrator
-
 - **Role:** Tenant owner or IT manager.
 - **Goals:** Configure tenant settings, manage users, oversee system health.
 - **Key Tasks:** Approve new user registrations, create roles, set pricing, manage branding.
 
 ### 2.2 Director
-
 - **Role:** Facility director / clinical lead.
 - **Goals:** Oversee operations, monitor patient outcomes, manage staff.
 - **Key Tasks:** View dashboards, approve force discharges, review clinical reports.
 
 ### 2.3 Psychiatrist
-
 - **Role:** Medical doctor specialising in mental health.
 - **Goals:** Conduct psychiatric reviews, prescribe medications, update treatment plans.
 - **Key Tasks:** Schedule appointments, record MSE, adjust medications, document clinical findings.
 
 ### 2.4 Clinical Officer
-
 - **Role:** General practitioner or clinical officer.
 - **Goals:** Daily patient reviews, manage chronic conditions, coordinate care.
 - **Key Tasks:** Record daily progress notes, order lab tests, initiate discharges.
 
 ### 2.5 Nurse
-
-- **Role:** Registered nurse.
+- **Role:** Registered nurse or psychiatric nurse.
 - **Goals:** Monitor patients, administer medication, document nursing care.
 - **Key Tasks:** Record vitals, administer medications via MAR, write SOAP notes, shift handover.
 
 ### 2.6 Counselor
-
 - **Role:** Mental health counselor.
 - **Goals:** Conduct therapy sessions, track patient progress.
 - **Key Tasks:** Schedule individual/group sessions, write progress notes, evaluate treatment goals.
 
 ### 2.7 Pharmacist
-
 - **Role:** Pharmacy manager.
 - **Goals:** Manage drug inventory, dispense medications, ensure safety.
 - **Key Tasks:** Add/update stock, dispense to patients, monitor expiry, generate stock reports.
 
 ### 2.8 Laboratory Technologist
-
 - **Role:** Lab technician.
-- **Goals:** Process lab requests, enter results.
+- **Goals:** Process lab requests and tests, enter results.
 - **Key Tasks:** Receive test orders, collect samples, enter results, flag abnormal values.
 
 ### 2.9 Accountant
-
 - **Role:** Finance officer.
 - **Goals:** Manage billing, invoicing, and payments.
 - **Key Tasks:** Generate invoices, record payments, track outstanding balances, sponsor statements.
 
 ### 2.10 Receptionist
-
 - **Role:** Front‑office staff.
 - **Goals:** Register patients, handle admissions, manage appointments.
 - **Key Tasks:** Register new patients, admit patients, search patients, update demographics.
 
 ### 2.11 Store Manager
-
 - **Role:** Supplies manager.
 - **Goals:** Manage consumables inventory.
 - **Key Tasks:** Add stock, issue items, generate purchase orders.
 
 ### 2.12 Cook
-
 - **Role:** Kitchen staff.
 - **Goals:** Plan meals based on patient dietary needs (anonymised).
 - **Key Tasks:** View dietary requirements, see patient counts (names hidden).
 
 ### 2.13 Sponsor (External)
-
 - **Role:** Individual or organisation paying for patient treatment.
 - **Goals:** View statements, make payments, see outstanding balances.
-- **Key Tasks:** Login (limited access), view sponsor‑specific dashboard, download statements.
-
----
+- **Key Tasks:** Login (limited access) or access info through whatsapp, view sponsor‑specific dashboard, download statements.
 
 ## 3. User Journeys (Core Workflows)
-
 ### 3.1 Patient Registration & Admission
-
 **Actor:** Receptionist
 
 **Pre‑condition:** Patient arrives at the facility.
@@ -153,10 +129,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - Bed already occupied → bed not listed.
 - Duplicate patient (same ID/phone) → warning: "Patient already exists. Do you want to update their record?"
 
----
 
 ### 3.2 Recording Vitals
-
 **Actor:** Nurse
 
 **Pre‑condition:** Patient is admitted.
@@ -186,10 +160,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - Out‑of‑range values (e.g., HR > 300) → warning: "Please verify the value."
 - Editing after 24 hours → blocked with message: "Vitals cannot be edited after 24 hours."
 
----
 
 ### 3.3 Medication Administration (MAR)
-
 **Actor:** Nurse
 
 **Pre‑condition:** Pharmacist has dispensed medications and medication orders exist.
@@ -218,10 +190,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - Medication out of stock → warning: "Insufficient stock. Contact pharmacy."
 - Time/date in the future → validation: "Cannot record future administrations."
 
----
 
 ### 3.4 Discharge Workflow
-
 **Actor:** Doctor / Clinical Officer (initiates), with steps for Pharmacy, Billing, Finance.
 
 **Pre‑condition:** Patient is ready for discharge.
@@ -284,10 +254,7 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - Balance > 0 and user not admin → button greyed out with tooltip: "Contact admin to clear balance."
 - Missing clinical summary → validation.
 
----
-
 ### 3.5 Generating an Invoice
-
 **Actor:** Accountant
 
 **Pre‑condition:** Patient has accrued charges.
@@ -315,10 +282,7 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - No charges → message: "No charges to invoice."
 - Missing facility branding → system uses default (RehabYangu).
 
----
-
 ### 3.6 Recording Payment
-
 **Actor:** Accountant
 
 **Steps:**
@@ -334,10 +298,7 @@ This document serves as the bridge between the Product Requirements (PRD) and th
    - Logs in audit trail.
 7. Accountant can print or email the receipt.
 
----
-
 ### 3.7 Pharmacy Dispensing
-
 **Actor:** Pharmacist
 
 **Pre‑condition:** Doctor has prescribed medication (via EMR or prescription).
@@ -366,10 +327,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
 - Insufficient stock → warning: "Only X units available. Adjust quantity."
 - Drug expired → blocked: "This batch is expired. Select another batch."
 
----
 
 ### 3.8 Psychiatric Review
-
 **Actor:** Psychiatrist
 
 **Steps:**
@@ -387,10 +346,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
    - Notifies clinical team.
    - Updates treatment plan if applicable.
 
----
 
 ### 3.9 Counseling Session
-
 **Actor:** Counselor
 
 **Steps:**
@@ -408,10 +365,8 @@ This document serves as the bridge between the Product Requirements (PRD) and th
    - Updates weekly session count.
    - If billing applies, adds charge (configurable per tenant).
 
----
 
 ## 4. Workflow Diagrams (Text‑Based)
-
 ### 4.1 Discharge Workflow
 
 ┌──────────────┐
@@ -505,16 +460,12 @@ text
 │ History/ │
 │ Trends │
 └──────────────┘
-text
 
-
----
 
 ## 5. Role‑Based Access – Summary Table
-
 | Role | Can View | Can Create/Edit | Restricted |
 |------|----------|-----------------|------------|
-| Super Admin | All | All system settings, tenant config | N/A |
+| Super Admin | All | All system settings, tenant config | No Restriction |
 | Director | All clinical & financial dashboards | Force discharge, approve users | Cannot edit billing rates (configurable) |
 | Psychiatrist | Patient EMR, MAR, pharmacy | Psychiatric reviews, prescriptions | Cannot discharge, cannot view finance |
 | Clinical Officer | Patient EMR, vitals, lab | Progress notes, initiate discharge (if balance=0) | Cannot prescribe controlled meds (configurable) |
@@ -528,10 +479,8 @@ text
 | Cook | Dietary requirements, patient counts (anonymised) | View only | Cannot view patient names/clinical data |
 | Sponsor | Sponsor dashboard | View statements, pay | Cannot view other patients/sponsors |
 
----
 
 ## 6. Screen Transitions & Navigation
-
 ### Main Navigation (Sidebar)
 All authenticated users see a sidebar with modules based on their role.
 
@@ -555,10 +504,8 @@ Located at the top of every page. Users can search by:
 
 Search results are filtered by user permissions.
 
----
 
 ## 7. Error Scenarios & System Responses
-
 | Scenario | System Response |
 |----------|-----------------|
 | User tries to access a page without permission | Redirect to dashboard with message: "You do not have permission to view this page." |
@@ -572,10 +519,8 @@ Search results are filtered by user permissions.
 | M‑Pesa payment reference missing | Validation: "M‑Pesa transaction ID is required." |
 | Bed already occupied | Dropdown excludes occupied beds; if selected, show error. |
 
----
 
 ## 8. Success Metrics for User Journeys
-
 | Journey | Key Success Indicator |
 |---------|------------------------|
 | Patient Registration | Time to register < 3 minutes. |
@@ -585,15 +530,10 @@ Search results are filtered by user permissions.
 | Medication Dispensing | Zero decimal errors; stock updated correctly. |
 | MAR | All administrations recorded within 1 hour of schedule. |
 
----
 
 ## 9. Change Log
-
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-07-11 | CTO | Initial draft from PRD and Serenity Place prompt. |
+| 0.1 | 2026-07-11 | UX Lead | Reviewed for clarity. |
 
----
-
-**Status:** DRAFT – Ready for review by Product Owners.
-
+**Status:** On review – Ready for review by other team members.   
