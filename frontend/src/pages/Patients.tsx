@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import api from '../api/client';
 import PatientForm from '../components/PatientForm';
 
@@ -34,8 +35,11 @@ const Patients: React.FC = () => {
       ) : (
         <ul className="space-y-2">
           {patients?.map((p: any) => (
-            <li key={p.id} className="bg-white p-3 rounded shadow">
-              <span className="font-medium">{p.first_name} {p.last_name}</span> – {p.phone}
+            <li key={p.id} className="bg-white p-3 rounded shadow hover:bg-gray-50">
+              <Link to={`/patients/${p.id}`} className="block">
+                <span className="font-medium">{p.first_name} {p.last_name}</span> – {p.phone}
+                <span className="ml-4 text-sm text-gray-500">Click to view details →</span>
+              </Link>
             </li>
           ))}
         </ul>

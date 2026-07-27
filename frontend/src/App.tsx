@@ -4,6 +4,7 @@ import { createRootRoute, createRoute, createRouter, RouterProvider, Outlet, Lin
 import Login from './pages/Login';
 import Patients from './pages/Patients';
 import Appointments from './pages/Appointments';
+import PatientDetail from './pages/PatientDetail';
 import type { ReactNode } from 'react';
 
 function Layout({ children }: { children: ReactNode }) {
@@ -45,13 +46,24 @@ const appointmentsRoute = createRoute({
   component: () => <Appointments />,
 });
 
+const patientDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/patients/$id',
+  component: () => <PatientDetail />,
+});
+
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   component: () => <Login />,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, appointmentsRoute, loginRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  appointmentsRoute,
+  patientDetailRoute,
+  loginRoute,
+]);
 const router = createRouter({ routeTree });
 
 declare module '@tanstack/react-router' {
