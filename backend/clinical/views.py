@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from rest_framework import viewsets, permissions
+from .models import ClinicalNote
+from .serializers import ClinicalNoteSerializer
 
-# Create your views here.
+class ClinicalNoteViewSet(viewsets.ModelViewSet):
+    queryset = ClinicalNote.objects.all()
+    serializer_class = ClinicalNoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
