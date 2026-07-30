@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { UserPlusIcon, PhoneIcon, ArrowRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import api from '../api/client';
 import PatientForm from '../components/PatientForm';
+import { EmptyState } from '../components/EmptyState';
+import { SkeletonPatientCard } from '../components/Skeleton';
 
 const fetchPatients = async () => {
   const { data } = await api.get('/patients/');
@@ -11,38 +18,91 @@ const fetchPatients = async () => {
 
 const Patients: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
   const { data: patients, isLoading, error } = useQuery({
     queryKey: ['patients'],
     queryFn: fetchPatients,
   });
 
-  if (isLoading) return <div className="p-4">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error loading patients</div>;
+  const filtered = patients?.filter((p: any) =>
+    `${p.first_name} ${p.last_name} ${p.phone}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  if (isLoading) return <SkeletonPatientCard count={3} />;
+  if (error) return <div className="text-danger text-sm p-4">Error loading patients.</div>;
+
+  const getAcuityClass = (status: string) => {
+    switch (status) {
+      case 'active': return 'acuity-rail-solid';
+      case 'discharged': return 'acuity-rail-dotted';
+      default: return 'acuity-rail-dashed';
+    }
+  };
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Patients</h2>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          + Add Patient
-        </button>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-secondary-800">Patients</h1>
+          <p className="text-sm text-secondary-500">Manage all patients across your facility</p>
+        </div>
+        <Button onClick={() => setShowForm(true)}>
+          <UserPlusIcon className="w-4 h-4 mr-2" /> Add Patient
+        </Button>
       </div>
-      {patients?.length === 0 ? (
-        <p>No patients found. Add your first patient.</p>
+
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400" />
+        <Input
+          type="text"
+          placeholder="Search by name or phone..."
+          className="pl-9"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {filtered?.length === 0 ? (
+        <EmptyState
+          title="No patients found"
+          description="Start by adding your first patient."
+          actionLabel="Add Patient"
+          onAction={() => setShowForm(true)}
+          iconType="users"
+        />
       ) : (
-        <ul className="space-y-2">
-          {patients?.map((p: any) => (
-            <li key={p.id} className="bg-white p-3 rounded shadow hover:bg-gray-50">
-              <Link to={`/patients/${p.id}`} className="block">
-                <span className="font-medium">{p.first_name} {p.last_name}</span> – {p.phone}
-                <span className="ml-4 text-sm text-gray-500">Click to view details →</span>
-              </Link>
-            </li>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered?.map((p: any) => (
+            <Link
+              key={p.id}
+              to="/patients/$id"
+              params={{ id: String(p.id) }}
+              className={`block ${getAcuityClass(p.status)}`}
+            >
+              <Card className="hover:shadow-card-hover transition-all duration-200 cursor-pointer group">
+                <CardContent className="p-4 flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-secondary-800 truncate">
+                      {p.first_name} {p.last_name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-sm text-secondary-500 mt-1">
+                      <PhoneIcon className="w-3.5 h-3.5" />
+                      <span>{p.phone}</span>
+                    </div>
+                    {p.status && (
+                      <Badge variant={p.status === 'active' ? 'default' : p.status === 'discharged' ? 'destructive' : 'secondary'} className="mt-2">
+                        {p.status}
+                      </Badge>
+                    )}
+                  </div>
+                  <ArrowRightIcon className="w-4 h-4 text-secondary-300 group-hover:text-primary-600 transition-colors flex-shrink-0 mt-1" />
+                </CardContent>
+              </Card>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
       {showForm && <PatientForm onClose={() => setShowForm(false)} />}
     </div>

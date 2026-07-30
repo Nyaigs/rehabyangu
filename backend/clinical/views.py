@@ -1,15 +1,29 @@
 from rest_framework import viewsets, permissions
 from .models import ClinicalNote
 from .serializers import ClinicalNoteSerializer
+from authorization.permissions import HasPermission
 
 class ClinicalNoteViewSet(viewsets.ModelViewSet):
-    queryset = ClinicalNote.objects.all()  # required for router basename
+    queryset = ClinicalNote.objects.all()
     serializer_class = ClinicalNoteSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_permissions(self):
+        action_permissions = {
+            'list': 'clinicalnote:view',
+            'retrieve': 'clinicalnote:view',
+            'create': 'clinicalnote:create',
+            'update': 'clinicalnote:edit',
+            'partial_update': 'clinicalnote:edit',
+            'destroy': 'clinicalnote:edit',
+        }
+        codename = action_permissions.get(self.action, 'clinicalnote:view')
+        return [permissions.IsAuthenticated(), HasPermission(codename)]
+
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('patient', 'clinician')
-        patient_id = self.request.query_params.get('patient')
-        if patient_id:
-            queryset = queryset.filter(patient_id=patient_id)
-        return queryset.order_by('-date')
+        user = self.request.user
+        if user.is_superuser:
+            return self.queryset
+        if hasattr(user, 'profile') and user.profile.tenant:
+            return self.queryset.filter(tenant=user.profile.tenant)
+        return self.queryset.none()

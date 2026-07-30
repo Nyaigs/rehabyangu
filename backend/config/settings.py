@@ -52,7 +52,13 @@ INSTALLED_APPS = [
     'clinical',
     'billing',
     'sponsors',
-]
+    'tenants',
+    'inventory',
+    'vitals',
+    'users',
+    'subscriptions',
+    'authorization',
+    ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

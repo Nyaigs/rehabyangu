@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from tenants.models import Tenant
 
 User = get_user_model()
 
@@ -38,6 +39,12 @@ class Patient(models.Model):
     referring_doctor = models.CharField(max_length=200, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     
+    # Multi-tenant support
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='patients', default=1)
+    
+    # Discharge tracking
+    discharged_at = models.DateTimeField(null=True, blank=True)
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -48,3 +55,24 @@ class Patient(models.Model):
     
     class Meta:
         ordering = ['-intake_date']
+
+# ----- NEW: DischargeRequest Model -----
+class DischargeRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='discharge_requests')
+    requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='initiated_discharges')
+    requested_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
+    is_force = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_discharges')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approval_reason = models.TextField(blank=True, null=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Discharge request for {self.patient} - {self.status}"

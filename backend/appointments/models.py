@@ -1,6 +1,7 @@
 from django.db import models
 from patients.models import Patient
 from django.contrib.auth import get_user_model
+from tenants.models import Tenant  # <-- Added import
 
 User = get_user_model()
 
@@ -23,6 +24,9 @@ class Appointment(models.Model):
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
     notes = models.TextField(blank=True, null=True)
+    
+    # Multi-tenant support
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='appointments', default=1)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

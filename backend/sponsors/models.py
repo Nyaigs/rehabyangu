@@ -1,5 +1,6 @@
 from django.db import models
 from patients.models import Patient
+from tenants.models import Tenant  # <-- Added import
 
 class Sponsor(models.Model):
     RELATIONSHIP_CHOICES = [
@@ -18,6 +19,9 @@ class Sponsor(models.Model):
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES)
     company_name = models.CharField(max_length=200, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    
+    # Multi-tenant support
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='sponsors', default=1)
     
     created_at = models.DateTimeField(auto_now_add=True)
     
