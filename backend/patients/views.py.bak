@@ -10,7 +10,6 @@ from billing.models import PatientBill
 from subscriptions.models import Notification
 from authorization.permissions import HasPermission
 from users.models import UserProfile
-from users.models import TenantMembership
 from tenants.models import Tenant
 
 class PatientViewSet(viewsets.ModelViewSet):
@@ -34,13 +33,15 @@ class PatientViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_superuser:
             return self.queryset
-        tenant = getattr(self.request, "tenant", None)
-        if tenant:
-            return self.queryset.filter(tenant=tenant)
+        if hasattr(user, 'profile') and user.profile.tenant:
+            return self.queryset.filter(tenant=user.profile.tenant)
         return self.queryset.none()
+
     def perform_create(self, serializer):
         user = self.request.user
-        tenant = getattr(self.request, "tenant", None)
+        tenant = None
+        if hasattr(user, 'profile') and user.profile.tenant:
+            tenant = user.profile.tenant
         if not tenant:
             tenant = Tenant.objects.first()
         serializer.save(created_by=user, tenant=tenant)
@@ -50,11 +51,11 @@ class RequestDischargeView(APIView):
 
     def post(self, request, pk):
         user = request.user
-        if not hasattr(user, 'profile') or not request.tenant:
+        if not hasattr(user, 'profile') or not user.profile.tenant:
             return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
-            patient = Patient.objects.get(id=pk, tenant=request.tenant)
+            patient = Patient.objects.get(id=pk, tenant=user.profile.tenant)
         except Patient.DoesNotExist:
             return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -78,11 +79,11 @@ class RequestDischargeView(APIView):
             status='pending'
         )
 
-        admin_profiles = TenantMembership.objects.filter(tenant=request.tenant, is_rehab_admin=True)
-        for membership in admin_profiles:
+        admin_profiles = UserProfile.objects.filter(tenant=user.profile.tenant, is_rehab_admin=True)
+        for profile in admin_profiles:
             Notification.objects.create(
                 tenant=patient.tenant,
-                recipient=membership.user,
+                recipient=profile.user,
                 notification_type='other',
                 title='New Discharge Request',
                 message=f'{user.username} requested discharge for {patient.first_name} {patient.last_name}.'
@@ -99,11 +100,11 @@ class ApproveDischargeView(APIView):
 
     def post(self, request, pk):
         user = request.user
-        if not request.tenant_membership or not request.tenant_membership.is_rehab_admin:
+        if not hasattr(user, 'profile') or not user.profile.is_rehab_admin:
             return Response({'error': 'Only rehab admins can approve discharges'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
-            discharge_request = DischargeRequest.objects.get(id=pk, patient__tenant=request.tenant)
+            discharge_request = DischargeRequest.objects.get(id=pk, patient__tenant=user.profile.tenant)
         except DischargeRequest.DoesNotExist:
             return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -154,11 +155,11 @@ class RejectDischargeView(APIView):
 
     def post(self, request, pk):
         user = request.user
-        if not request.tenant_membership or not request.tenant_membership.is_rehab_admin:
+        if not hasattr(user, 'profile') or not user.profile.is_rehab_admin:
             return Response({'error': 'Only rehab admins can reject discharges'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
-            discharge_request = DischargeRequest.objects.get(id=pk, patient__tenant=request.tenant)
+            discharge_request = DischargeRequest.objects.get(id=pk, patient__tenant=user.profile.tenant)
         except DischargeRequest.DoesNotExist:
             return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -189,11 +190,11 @@ class PendingDischargesView(APIView):
 
     def get(self, request):
         user = request.user
-        if not request.tenant_membership or not request.tenant_membership.is_rehab_admin:
+        if not hasattr(user, 'profile') or not user.profile.is_rehab_admin:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
 
         pending = DischargeRequest.objects.filter(
-            patient__tenant=request.tenant,
+            patient__tenant=user.profile.tenant,
             status='pending'
         ).select_related('patient', 'requested_by')
 
@@ -213,11 +214,11 @@ class DischargedPatientsView(APIView):
 
     def get(self, request):
         user = request.user
-        if not hasattr(user, 'profile') or not request.tenant:
+        if not hasattr(user, 'profile') or not user.profile.tenant:
             return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
         patients = Patient.objects.filter(
-            tenant=request.tenant,
+            tenant=user.profile.tenant,
             status='discharged'
         ).order_by('-discharged_at').select_related('bill')
 

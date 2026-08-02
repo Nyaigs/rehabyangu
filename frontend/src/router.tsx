@@ -1,8 +1,4 @@
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRootRoute, createRoute, createRouter, RouterProvider, Outlet, Link } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
@@ -21,11 +17,11 @@ import Sponsors from './pages/Sponsors';
 import ComingSoon from './components/ComingSoon';
 import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
+import { useAuth } from './context/AuthContext';
 import type { ReactNode } from 'react';
 
+// Layout component
 function Layout({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  if (!user) return <Login />;
   return (
     <div className="flex h-screen overflow-hidden bg-secondary-50">
       <Sidebar />
@@ -39,16 +35,18 @@ function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+// Root route
 const rootRoute = createRootRoute({
   component: () => {
     const { user, isLoading } = useAuth();
     if (isLoading) return <div className="flex items-center justify-center h-screen text-sm text-secondary-500">Loading...</div>;
     if (!user) return <Login />;
     return <Layout><Outlet /></Layout>;
-  }
+  },
+  notFoundComponent: () => <div className="p-4 text-center">Page Not Found (404)</div>,
 });
 
-// All routes
+// Routes (no /new-login, no LoginPage import)
 const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: () => <Dashboard /> });
 const patientsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/patients', component: () => <Patients /> });
 const appointmentsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/appointments', component: () => <Appointments /> });
@@ -58,7 +56,7 @@ const adminTenantsRoute = createRoute({ getParentRoute: () => rootRoute, path: '
 const staffRoute = createRoute({ getParentRoute: () => rootRoute, path: '/staff', component: () => <Staff /> });
 const vitalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/vitals', component: () => <Vitals /> });
 const pendingDischargesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pending-discharges', component: () => <PendingDischarges /> });
-const dischargedPatientsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/discharged-patients', component: () => <DischargedPatients /> });
+const dischargedPatientsRoute = createRoute({ getParentRoute: () => rootRoute, path:'/discharged-patients', component: () => <DischargedPatients /> });
 const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: () => <Login /> });
 const admissionsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admissions', component: () => <ComingSoon /> });
 const clinicalNotesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/clinical-notes', component: () => <ClinicalNotes /> });
@@ -95,20 +93,10 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
 ]);
 
-const router = createRouter({ routeTree });
-declare module '@tanstack/react-router' { interface Register { router: typeof router; } }
+export const router = createRouter({ routeTree });
 
-function App() {
-  const queryClient = new QueryClient();
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </ToastProvider>
-    </QueryClientProvider>
-  );
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
 }
-
-export default App;

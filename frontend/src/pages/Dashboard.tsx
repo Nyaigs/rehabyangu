@@ -57,18 +57,18 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-secondary-800">Dashboard</h1>
+        <h1 className="text-xl font-bold text-secondary-800">Dashboard</h1>
         <p className="text-sm text-secondary-500">Good morning, welcome back.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="p-4">
+          <Card key={kpi.label} className="p-3.5">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider">{kpi.label}</p>
-                <p className="text-2xl font-bold text-secondary-900 mt-1">{kpi.value}</p>
-                <p className="text-xs text-secondary-500 mt-1">{kpi.trend}</p>
+                <p className="text-[10px] font-medium text-secondary-500 uppercase tracking-wider">{kpi.label}</p>
+                <p className="text-xl font-bold text-secondary-900 mt-0.5">{kpi.value}</p>
+                <p className="text-[10px] text-secondary-500 mt-0.5">{kpi.trend}</p>
               </div>
               <kpi.icon className="w-5 h-5 text-secondary-400" />
             </div>
@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Admission Trends</CardTitle>
           </CardHeader>
           <CardContent>
@@ -96,7 +96,7 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Revenue Overview</CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,10 +115,10 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button>Add Patient</Button>
-        <Button variant="outline">Book Appointment</Button>
-        <Button variant="outline">Record Vitals</Button>
-        <Button variant="secondary">View Reports</Button>
+        <Button size="sm">Add Patient</Button>
+        <Button size="sm" variant="outline">Book Appointment</Button>
+        <Button size="sm" variant="outline">Record Vitals</Button>
+        <Button size="sm" variant="secondary">View Reports</Button>
       </div>
     </div>
   );

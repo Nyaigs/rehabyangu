@@ -7,12 +7,15 @@ from django.utils import timezone
 from django.db import transaction
 from .models import Tenant
 from .serializers import TenantSerializer, TenantStatsSerializer, CreateTenantSerializer
-from users.models import UserProfile
+from users.models import UserProfile, TenantMembership
 from patients.models import Patient
 from authorization.permissions import HasPermission
 
 class TenantListView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def get(self, request):
         tenants = Tenant.objects.all()
@@ -20,7 +23,10 @@ class TenantListView(APIView):
         return Response(serializer.data)
 
 class TenantStatsView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def get(self, request):
         data = {
@@ -35,7 +41,10 @@ class TenantStatsView(APIView):
         return Response(serializer.data)
 
 class ToggleTenantStatusView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def patch(self, request, pk):
         try:
@@ -54,7 +63,10 @@ class ToggleTenantStatusView(APIView):
         return Response({'message': f'Tenant status updated to {new_status}'})
 
 class ExtendTrialView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def post(self, request, pk):
         try:
@@ -70,7 +82,10 @@ class ExtendTrialView(APIView):
         return Response({'message': f'Trial extended by {days} days', 'new_trial_end': new_trial_end})
 
 class TenantStaffListView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def get(self, request, pk):
         try:
@@ -78,19 +93,22 @@ class TenantStaffListView(APIView):
         except Tenant.DoesNotExist:
             return Response({'error': 'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        profiles = UserProfile.objects.filter(tenant=tenant).select_related('user')
+        memberships = TenantMembership.objects.filter(tenant=tenant).select_related('user')
         data = [{
-            'id': p.user.id,
-            'username': p.user.username,
-            'email': p.user.email,
-            'role': p.role,
-            'is_rehab_admin': p.is_rehab_admin,
-            'full_name': f"{p.user.first_name} {p.user.last_name}".strip()
-        } for p in profiles]
+            'id': m.user.id,
+            'username': m.user.username,
+            'email': m.user.email,
+            'role': m.role,
+            'is_rehab_admin': m.is_rehab_admin,
+            'full_name': f"{m.user.first_name} {m.user.last_name}".strip()
+        } for m in memberships]
         return Response(data)
 
 class CreateTenantView(APIView):
-    permission_classes = [IsAuthenticated, HasPermission('tenant:manage')]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), HasPermission('tenant:manage')]
 
     def post(self, request):
         serializer = CreateTenantSerializer(data=request.data)
@@ -117,12 +135,12 @@ class CreateTenantView(APIView):
             admin_user.is_staff = True
             admin_user.save()
 
-            profile = UserProfile.objects.get(user=admin_user)
-            profile.tenant = tenant
-            profile.role = 'rehab_admin'
-            profile.is_rehab_admin = True
-            profile.is_super_admin = False
-            profile.save()
+            TenantMembership.objects.create(
+                user=admin_user,
+                tenant=tenant,
+                role='rehab_admin',
+                is_rehab_admin=True
+            )
 
         return Response({
             'message': 'Tenant and Admin created successfully.',
@@ -137,9 +155,10 @@ class TenantConfigView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not hasattr(request.user, 'profile') or not request.user.profile.tenant:
-            return Response({'error': 'No tenant associated'}, status=status.HTTP_403_FORBIDDEN)
-        config = request.user.profile.tenant.config
+        tenant = getattr(request, 'tenant', None)
+        if not tenant:
+            return Response({'error': 'No tenant context'}, status=status.HTTP_403_FORBIDDEN)
+        config = tenant.config
         return Response({
             'primary_color': config.primary_color,
             'secondary_color': config.secondary_color,

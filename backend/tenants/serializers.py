@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Tenant
-from users.models import UserProfile
+from users.models import TenantMembership
 
 class TenantSerializer(serializers.ModelSerializer):
     user_count = serializers.SerializerMethodField()
@@ -16,7 +16,7 @@ class TenantSerializer(serializers.ModelSerializer):
         ]
 
     def get_user_count(self, obj):
-        return UserProfile.objects.filter(tenant=obj).count()
+        return TenantMembership.objects.filter(tenant=obj).count()
 
     def get_patient_count(self, obj):
         from patients.models import Patient

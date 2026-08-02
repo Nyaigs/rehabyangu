@@ -29,6 +29,7 @@ class Tenant(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='trial')
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='basic')
     billing_cycle = models.CharField(max_length=20, choices=BILLING_CYCLE_CHOICES, default='monthly')
+    monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     next_billing_date = models.DateTimeField(null=True, blank=True)
     grace_period_end = models.DateTimeField(null=True, blank=True)
@@ -47,6 +48,7 @@ class Tenant(models.Model):
             return None
         delta = self.next_billing_date - timezone.now()
         return delta.days
+
 
 class TenantConfig(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE, related_name='config')

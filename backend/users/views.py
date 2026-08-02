@@ -13,10 +13,10 @@ class StaffListView(APIView):
     permission_classes = [IsAuthenticated, HasPermission('staff:view')]
 
     def get(self, request):
-        if not hasattr(request.user, 'profile') or not request.user.profile.tenant:
+        if not hasattr(request.user, 'profile') or not request.tenant:
             return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
-        tenant = request.user.profile.tenant
+        tenant = request.tenant
         profiles = UserProfile.objects.filter(tenant=tenant).select_related('user')
         data = [{
             'id': p.user.id,
@@ -33,10 +33,10 @@ class CreateStaffView(APIView):
     permission_classes = [IsAuthenticated, HasPermission('staff:manage')]
 
     def post(self, request):
-        if not hasattr(request.user, 'profile') or not request.user.profile.tenant:
+        if not hasattr(request.user, 'profile') or not request.tenant:
             return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
-        if not request.user.profile.is_rehab_admin and not request.user.is_superuser:
+        if not (request.tenant_membership and request.tenant_membership.is_rehab_admin) and not request.user.is_superuser:
             return Response({'error': 'Only rehab admins can create staff'}, status=status.HTTP_403_FORBIDDEN)
 
         username = request.data.get('username')
@@ -49,7 +49,7 @@ class CreateStaffView(APIView):
         if not all([username, email, password]):
             return Response({'error': 'Username, email, and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        tenant = request.user.profile.tenant
+        tenant = request.tenant
 
         with transaction.atomic():
             if User.objects.filter(username=username).exists():
@@ -80,3 +80,19 @@ class CreateStaffView(APIView):
                 'full_name': f"{user.first_name} {user.last_name}".strip(),
             }
         }, status=status.HTTP_201_CREATED)
+
+from rest_framework.generics import ListAPIView
+from .models import AuditLog
+from .serializers import AuditLogSerializer
+from rest_framework.permissions import IsAuthenticated
+
+class TenantAuditLogView(ListAPIView):
+    serializer_class = AuditLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only show logs for the tenant linked to the request (from token)
+        tenant = getattr(self.request, 'tenant', None)
+        if not tenant:
+            return AuditLog.objects.none()
+        return AuditLog.objects.filter(tenant=tenant).order_by('-timestamp')[:1000]

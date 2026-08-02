@@ -1,3 +1,4 @@
+from users.permissions import IsInTenant
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView
 from rest_framework.response import Response
@@ -16,7 +17,7 @@ from inventory.models import InventoryItem
 from .pdf_generator import generate_invoice_pdf
 
 class ChargePatientView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -69,19 +70,19 @@ class ChargePatientView(APIView):
 class PatientBillView(RetrieveAPIView):
     queryset = PatientBill.objects.all()
     serializer_class = PatientBillSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def get_object(self):
         patient_id = self.kwargs.get('patient_id')
         bill, created = PatientBill.objects.get_or_create(
             patient_id=patient_id,
-            defaults={'tenant': self.request.user.profile.tenant}
+            defaults={'tenant': request.tenant}
         )
         return bill
 
 class InvoiceListView(ListAPIView):
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def get_queryset(self):
         patient_id = self.request.query_params.get('patient')
@@ -89,18 +90,18 @@ class InvoiceListView(ListAPIView):
             try:
                 bill = PatientBill.objects.get(
                     patient_id=patient_id,
-                    tenant=self.request.user.profile.tenant
+                    tenant=request.tenant
                 )
                 return Invoice.objects.filter(bill=bill).order_by('-generated_at')
             except PatientBill.DoesNotExist:
                 return Invoice.objects.none()
         return Invoice.objects.filter(
-            bill__tenant=self.request.user.profile.tenant
+            bill__tenant=request.tenant
         ).order_by('-generated_at')
 
 class GenerateInvoiceView(CreateAPIView):
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -121,7 +122,7 @@ class GenerateInvoiceView(CreateAPIView):
         try:
             patient = Patient.objects.get(
                 id=patient_id,
-                tenant=self.request.user.profile.tenant
+                tenant=request.tenant
             )
         except Patient.DoesNotExist:
             return Response(
@@ -161,11 +162,11 @@ class GenerateInvoiceView(CreateAPIView):
         )
 
 class DownloadInvoiceView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def get(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)
-        if invoice.bill.tenant != request.user.profile.tenant and not request.user.is_superuser:
+        if invoice.bill.tenant != request.tenant and not request.user.is_superuser:
             return Response(
                 {'error': 'Unauthorized'},
                 status=status.HTTP_403_FORBIDDEN
@@ -184,11 +185,11 @@ class DownloadInvoiceView(APIView):
         return response
 
 class SendInvoiceEmailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def post(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)
-        if invoice.bill.tenant != request.user.profile.tenant and not request.user.is_superuser:
+        if invoice.bill.tenant != request.tenant and not request.user.is_superuser:
             return Response(
                 {'error': 'Unauthorized'},
                 status=status.HTTP_403_FORBIDDEN

@@ -1,3 +1,4 @@
+from users.permissions import IsInTenant
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -7,7 +8,7 @@ from .models import Subscription, PaymentRecord, Notification
 from tenants.models import Tenant
 
 class RecordPaymentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def post(self, request):
         if not request.user.is_superuser:
@@ -61,7 +62,7 @@ class RecordPaymentView(APIView):
         return Response({'message': 'Payment recorded and subscription updated.'}, status=status.HTTP_200_OK)
 
 class NotificationListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def get(self, request):
         # For tenant admins: see their tenant's notifications
@@ -70,8 +71,8 @@ class NotificationListView(APIView):
             notifications = Notification.objects.all().order_by('-created_at')
         else:
             # Tenant admin/staff: only see their tenant's notifications
-            if hasattr(request.user, 'profile') and request.user.profile.tenant:
-                notifications = Notification.objects.filter(tenant=request.user.profile.tenant).order_by('-created_at')
+            if hasattr(request.user, 'profile') and request.tenant:
+                notifications = Notification.objects.filter(tenant=request.tenant).order_by('-created_at')
             else:
                 return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -86,7 +87,7 @@ class NotificationListView(APIView):
         return Response(data)
 
 class MarkNotificationReadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = IsAuthenticated
 
     def patch(self, request, pk):
         try:
@@ -96,8 +97,8 @@ class MarkNotificationReadView(APIView):
 
         # Check permissions: only tenant admin or superuser can mark
         if not request.user.is_superuser:
-            if hasattr(request.user, 'profile') and request.user.profile.tenant:
-                if notification.tenant != request.user.profile.tenant:
+            if hasattr(request.user, 'profile') and request.tenant:
+                if notification.tenant != request.tenant:
                     return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             else:
                 return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)

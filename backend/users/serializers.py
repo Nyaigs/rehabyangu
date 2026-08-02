@@ -10,3 +10,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'role', 'tenant_name', 'is_rehab_admin']
+from rest_framework import serializers
+from .models import AuditLog
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    actor_username = serializers.CharField(source='actor.username', read_only=True)
+    actor_tenant_user_id = serializers.CharField(source='actor.tenant_memberships.first.tenant_user_id', read_only=True)
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'actor', 'actor_username', 'actor_tenant_user_id', 'tenant', 'action', 'content_type', 'object_id', 'description', 'ip_address', 'timestamp']

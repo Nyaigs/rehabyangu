@@ -1,94 +1,123 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from '@tanstack/react-router';
-import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import Logo from '../components/auth/Logo';
+import InputField from '../components/auth/InputField';
+import PasswordField from '../components/auth/PasswordField';
+import Button from '../components/auth/Button';
+import SecurityNotice from '../components/auth/SecurityNotice';
+import Footer from '../components/auth/Footer';
+import { EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+    setLoading(true);
     try {
       await login(username, password);
       navigate({ to: '/' });
     } catch (err) {
-      setError('Invalid credentials. Please try again.');
+      setError('Unable to sign in. Please check your email and password.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f4f6f7] px-4 py-12">
-      <div className="w-full max-w-sm">
-        {/* Logo / Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary-700">RehabYangu</h1>
-          <p className="text-sm text-secondary-500 mt-1">Smart Rehabilitation Management</p>
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#f4f6f7]">
+      {/* Left Brand Section */}
+      <div className="md:w-[45%] bg-[#0f2e3d] text-white relative overflow-hidden flex flex-col justify-between p-8 md:p-12 lg:p-16 min-h-[50vh] md:min-h-screen">
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0f2e3d] via-[#1d5a70]/30 to-[#0f2e3d] opacity-15" />
+
+        {/* Logo */}
+        <div className="relative z-10 animate-fadeIn" style={{ animationDelay: '100ms' }}>
+          <Logo size="lg" className="opacity-90" />
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-xl shadow-card p-6">
-          <h2 className="text-xl font-semibold text-secondary-800 mb-2">Welcome back</h2>
-          <p className="text-sm text-secondary-500 mb-6">Sign in to your account to continue.</p>
+        {/* Brand Text */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-md mx-auto md:mx-0">
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight animate-slideUp" style={{ animationDelay: '200ms' }}>
+            Transforming Rehabilitation Care Through Technology
+          </h1>
+          <p className="text-[#dce8ec] text-sm md:text-base leading-relaxed mt-4 max-w-sm animate-slideUp" style={{ animationDelay: '400ms' }}>
+            A secure digital platform helping rehabilitation centres manage patients, clinical workflows, billing, and operations in one place.
+          </p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label className="form-label">Username</label>
-                <div className="relative">
-                  <EnvelopeIcon className="w-4 h-4 text-secondary-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="input-field pl-9"
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="form-label">Password</label>
-                <div className="relative">
-                  <LockClosedIcon className="w-4 h-4 text-secondary-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pl-9"
-                    placeholder="Enter your password"
-                    required
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <div className="text-sm text-danger bg-danger-light p-2 rounded-md">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary w-full justify-center py-2.5 text-sm font-semibold"
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
-
-              <div className="text-center text-xs text-secondary-400 pt-2">
-                <span>© 2026 RehabYangu. Powered by Weiraro Technologies.</span>
-              </div>
+          {/* Illustration placeholder */}
+          <div className="mt-8 relative animate-float">
+            <div className="w-full max-w-sm h-48 bg-[#1d5a70]/30 rounded-2xl flex items-center justify-center border border-[#1d5a70]/20">
+              <svg className="w-24 h-24 text-[#dce8ec]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4" />
+              </svg>
             </div>
-          </form>
+          </div>
+        </div>
+
+        {/* Footer (only visible on desktop) */}
+        <div className="relative z-10 hidden md:block">
+          <Footer />
+        </div>
+      </div>
+
+      {/* Right Login Section */}
+      <div className="md:w-[55%] flex items-center justify-center p-6 md:p-12 bg-[#f4f6f7]">
+        <div className="w-full max-w-md animate-slideUp" style={{ animationDelay: '300ms' }}>
+          <div className="bg-white rounded-2xl shadow-card p-6 md:p-10">
+            {/* Small logo on mobile/tablet */}
+            <div className="md:hidden flex justify-center mb-4">
+              <Logo size="sm" />
+            </div>
+
+            <div className="text-center md:text-left">
+              <h2 className="text-2xl md:text-3xl font-bold text-secondary-800">Welcome Back</h2>
+              <p className="text-sm text-secondary-500 mt-1">Sign in to access your rehabilitation workspace.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <InputField
+                label="Username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                icon={<EnvelopeIcon className="w-5 h-5" />}
+                error={error}
+                required
+              />
+
+              <PasswordField
+                label="Password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={error}
+                required
+              />
+
+              <Button type="submit" loading={loading} icon className="w-full">
+                Sign in
+              </Button>
+            </form>
+
+            <div className="mt-6">
+              <SecurityNotice />
+            </div>
+
+            {/* Footer for mobile */}
+            <div className="mt-8 block md:hidden">
+              <Footer />
+            </div>
+          </div>
         </div>
       </div>
     </div>

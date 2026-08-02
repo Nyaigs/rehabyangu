@@ -25,9 +25,7 @@ const Patients: React.FC = () => {
   });
 
   const filtered = patients?.filter((p: any) =>
-    `${p.first_name} ${p.last_name} ${p.phone}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+    `${p.first_name} ${p.last_name} ${p.phone}`.toLowerCase().includes(search.toLowerCase())
   );
 
   if (isLoading) return <SkeletonPatientCard count={3} />;
@@ -45,20 +43,20 @@ const Patients: React.FC = () => {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-secondary-800">Patients</h1>
-          <p className="text-sm text-secondary-500">Manage all patients across your facility</p>
+          <h1 className="text-xl font-bold text-secondary-800">Patients</h1>
+          <p className="text-xs text-secondary-500">Manage all patients across your facility</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <UserPlusIcon className="w-4 h-4 mr-2" /> Add Patient
+        <Button size="sm" onClick={() => setShowForm(true)}>
+          <UserPlusIcon className="w-3.5 h-3.5 mr-1.5" /> Add Patient
         </Button>
       </div>
 
       <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-secondary-400" />
         <Input
           type="text"
           placeholder="Search by name or phone..."
-          className="pl-9"
+          className="pl-9 h-9 text-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -82,22 +80,22 @@ const Patients: React.FC = () => {
               className={`block ${getAcuityClass(p.status)}`}
             >
               <Card className="hover:shadow-card-hover transition-all duration-200 cursor-pointer group">
-                <CardContent className="p-4 flex items-start justify-between">
+                <CardContent className="p-3.5 flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-secondary-800 truncate">
+                    <h3 className="text-sm font-semibold text-secondary-800 truncate">
                       {p.first_name} {p.last_name}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-sm text-secondary-500 mt-1">
-                      <PhoneIcon className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-1 text-xs text-secondary-500 mt-0.5">
+                      <PhoneIcon className="w-3 h-3" />
                       <span>{p.phone}</span>
                     </div>
                     {p.status && (
-                      <Badge variant={p.status === 'active' ? 'default' : p.status === 'discharged' ? 'destructive' : 'secondary'} className="mt-2">
+                      <Badge variant={p.status === 'active' ? 'default' : p.status === 'discharged' ? 'destructive' : 'secondary'} className="mt-1.5 text-[10px]">
                         {p.status}
                       </Badge>
                     )}
                   </div>
-                  <ArrowRightIcon className="w-4 h-4 text-secondary-300 group-hover:text-primary-600 transition-colors flex-shrink-0 mt-1" />
+                  <ArrowRightIcon className="w-3 h-3 text-secondary-300 group-hover:text-primary-600 transition-colors flex-shrink-0 mt-1" />
                 </CardContent>
               </Card>
             </Link>

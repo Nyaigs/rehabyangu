@@ -1,3 +1,4 @@
+from users.permissions import IsInTenant
 from rest_framework import viewsets, permissions
 from .models import ClinicalNote
 from .serializers import ClinicalNoteSerializer
@@ -6,7 +7,7 @@ from authorization.permissions import HasPermission
 class ClinicalNoteViewSet(viewsets.ModelViewSet):
     queryset = ClinicalNote.objects.all()
     serializer_class = ClinicalNoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = permissions.IsAuthenticated
 
     def get_permissions(self):
         action_permissions = {
@@ -24,6 +25,6 @@ class ClinicalNoteViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_superuser:
             return self.queryset
-        if hasattr(user, 'profile') and user.profile.tenant:
-            return self.queryset.filter(tenant=user.profile.tenant)
+        if hasattr(user, 'profile') and self.request.tenant:
+            return self.queryset.filter(tenant=self.request.tenant)
         return self.queryset.none()

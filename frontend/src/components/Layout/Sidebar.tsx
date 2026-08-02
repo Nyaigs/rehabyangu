@@ -50,10 +50,10 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-56 bg-primary-700 text-white h-screen flex flex-col fixed left-0 top-0 z-40">
-      <div className="flex items-center h-14 px-4 border-b border-primary-800">
-        <span className="text-lg font-semibold tracking-tight">RehabYangu</span>
+      <div className="flex items-center h-12 px-4 border-b border-primary-800">
+        <span className="text-sm font-semibold tracking-tight">RehabYangu</span>
       </div>
-      <nav className="flex-1 overflow-y-auto p-3 space-y-4">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-3">
         {groups.map((group) => {
           const items = navItems.filter(i => i.group === group.key);
           if (items.length === 0) return null;
@@ -67,13 +67,13 @@ const Sidebar: React.FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+                    className={`flex items-center gap-3 px-2.5 py-1.5 rounded-md text-sm transition-all duration-150 ${
                       location.pathname === item.path
                         ? 'bg-primary-600 text-white shadow-sm'
                         : 'text-secondary-200 hover:bg-primary-600/50 hover:text-white'
                     }`}
                   >
-                    <item.icon className="w-4 h-4" />
+                    <item.icon className="w-3.5 h-3.5" />
                     <span>{item.label}</span>
                   </Link>
                 ))}
@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-primary-800 text-[10px] text-secondary-300">
+      <div className="p-3 border-t border-primary-800 text-[10px] text-secondary-300">
         RehabYangu v1.0
       </div>
     </aside>
