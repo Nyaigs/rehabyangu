@@ -47,6 +47,5 @@ Items are listed in rough priority order and can be tackled incrementally.
 - [ ] Add pre‑commit hooks for linting (Black, isort, flake8)
 - [ ] Document internal API conventions (error format, pagination, filtering)
 
----
 
 *This roadmap is a living document. Items can be added, removed, or re‑prioritised as the project evolves.*
