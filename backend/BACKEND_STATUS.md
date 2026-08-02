@@ -31,18 +31,17 @@ All data is tenant‑isolated at the application layer via `Tenant` and `TenantM
 - Admin integration for superadmins.
 
 ## App Hardening Status
-| App           | View Hardening | Tenant Scoping | RBAC Permissions | Auto Auditing |
-|---------------|---------------|----------------|------------------|--------------|
-| patients      | ✅            | ✅             | ✅               | ✅           |
-| tenants       | ✅            | ✅             | ✅               | N/A          |
-| inventory     | ✅            | ✅             | ✅               | ❌           |
-| vitals        | ✅            | ✅             | ✅               | ❌           |
-| clinical      | ✅            | ✅             | ✅               | ❌           |
-| appointments  | ✅            | ✅             | ✅               | ✅           |
-| billing       | ✅            | ✅             | ✅               | ❌           |
-| subscriptions | ✅            | ✅             | ✅               | N/A          |
-| users         | ✅            | ✅             | ✅               | N/A          |
-| authorization | ✅            | ✅             | ✅               | N/A          |
+
+- [x] **patients** – View hardening, Tenant scoping, RBAC permissions, Auto auditing
+- [x] **tenants** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: N/A)
+- [x] **inventory** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: ❌)
+- [x] **vitals** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: ❌)
+- [x] **clinical** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: ❌)
+- [x] **appointments** – View hardening, Tenant scoping, RBAC permissions, Auto auditing
+- [x] **billing** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: ❌)
+- [x] **subscriptions** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: N/A)
+- [x] **users** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: N/A)
+- [x] **authorization** – View hardening, Tenant scoping, RBAC permissions (Auto auditing: N/A)
 
 All views now use `request.tenant` and `TenantMembership`. No code references the deprecated `UserProfile.tenant`.
 
