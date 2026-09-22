@@ -1,7 +1,7 @@
 # RehabYangu
 
 **Enterprise Multi‑Tenant Rehabilitation Management Platform**  
-Built by [Weiraro Technologies](https://weiraro.com)
+Built by [WeiraLynk](https://weiralynk.com)
 
 RehabYangu is a commercial SaaS platform designed for rehabilitation centres, mental health hospitals, addiction treatment facilities, psychiatric hospitals, and wellness centres. It replaces fragmented paper records and spreadsheets with a single, secure, cloud‑based system.
 
