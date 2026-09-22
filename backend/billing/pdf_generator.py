@@ -1,16 +1,46 @@
 import io
 import os
-from datetime import datetime
+from xml.sax.saxutils import escape
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, cm
+from reportlab.lib.units import cm
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-from django.conf import settings
 from django.core.files.base import ContentFile
-from django.db import models  # <-- Added missing import
+from django.core.files.storage import default_storage
 from .models import Invoice
+from tenants.models import TenantConfig
+
+
+def _colour(value, fallback):
+    """Return a ReportLab colour from a tenant #RRGGBB value."""
+    try:
+        return colors.HexColor(value)
+    except (TypeError, ValueError):
+        return colors.HexColor(fallback)
+
+
+def _logo_path(config):
+    """Get a local logo path for ReportLab without relying on MEDIA_URL."""
+    if not config or not config.logo:
+        return None
+    try:
+        path = config.logo.path
+        if os.path.exists(path):
+            return path
+    except (NotImplementedError, ValueError):
+        pass
+    # Non-local storage backends do not expose FieldFile.path.  ReportLab needs
+    # a filename, so materialise a short-lived local copy for this render.
+    try:
+        with default_storage.open(config.logo.name, 'rb') as source:
+            temporary = io.BytesIO(source.read())
+        # Image accepts file-like objects and keeps the bytes for document build.
+        temporary.seek(0)
+        return temporary
+    except Exception:
+        return None
 
 def generate_invoice_pdf(invoice):
     """
@@ -24,6 +54,17 @@ def generate_invoice_pdf(invoice):
     
     styles = getSampleStyleSheet()
     # Custom styles
+    tenant = invoice.bill.tenant
+    tenant_config, _ = TenantConfig.objects.get_or_create(
+        tenant=tenant,
+        defaults={
+            'company_name': tenant.name,
+            'footer_text': f'{tenant.name} – Powered by RehabYangu',
+        },
+    )
+    primary_colour = _colour(tenant_config.primary_color, '#2563EB')
+    company_name = tenant_config.company_name or tenant.name
+
     title_style = ParagraphStyle(
         'Title',
         parent=styles['Heading1'],
@@ -41,26 +82,26 @@ def generate_invoice_pdf(invoice):
     normal_style = styles['Normal']
     right_style = ParagraphStyle('Right', parent=normal_style, alignment=TA_RIGHT)
     center_style = ParagraphStyle('Center', parent=normal_style, alignment=TA_CENTER)
+    brand_style = ParagraphStyle('Brand', parent=styles['Heading1'], fontSize=18, leading=22,
+                                 textColor=primary_colour, spaceAfter=2)
+    tagline_style = ParagraphStyle('Tagline', parent=normal_style, fontSize=9,
+                                   textColor=colors.HexColor('#475569'))
     
     # Build content
     story = []
     
     # ===== Header =====
-    # Logo (if available) - safely check path
-    static_dir = os.path.join(settings.BASE_DIR, 'static')
-    logo_path = os.path.join(static_dir, 'logo.png')
-    if os.path.exists(logo_path):
-        try:
-            story.append(Image(logo_path, width=2*inch, height=1*inch))
-            story.append(Spacer(1, 0.2*cm))
-        except Exception:
-            # If logo fails to load, skip it
-            pass
-    
-    # Rehab Name
-    tenant_name = invoice.bill.tenant.name
-    story.append(Paragraph(f"<b>{tenant_name}</b>", title_style))
-    story.append(Paragraph("Rehabilitation Centre", center_style))
+    logo = _logo_path(tenant_config)
+    try:
+        logo_cell = Image(logo, width=2.5*cm, height=2.5*cm) if logo else ''
+    except Exception:
+        logo_cell = ''
+    brand_lines = [Paragraph(escape(company_name), brand_style)]
+    if tenant_config.tagline:
+        brand_lines.append(Paragraph(escape(tenant_config.tagline), tagline_style))
+    header = Table([[logo_cell, brand_lines]], colWidths=[3.0*cm, 14.0*cm], hAlign='LEFT')
+    header.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
+    story.append(header)
     story.append(Spacer(1, 0.5*cm))
     
     # ===== Invoice Title =====
@@ -129,7 +170,7 @@ def generate_invoice_pdf(invoice):
     t3.setStyle(TableStyle([
         ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
         ('FONTSIZE', (0,0), (-1,-1), 9),
-        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('BACKGROUND', (0,0), (-1,0), primary_colour),
         ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('ALIGN', (1,1), (-1,-1), 'LEFT'),
@@ -140,7 +181,7 @@ def generate_invoice_pdf(invoice):
     story.append(Spacer(1, 0.3*cm))
     
     # ===== Totals =====
-    payments_total = invoice.bill.payments.aggregate(total=models.Sum('amount'))['total'] or 0
+    payments_total = invoice.amount_paid
     balance_due = invoice.total_amount - payments_total
     
     totals_data = [
@@ -160,10 +201,8 @@ def generate_invoice_pdf(invoice):
     story.append(Spacer(1, 0.5*cm))
     
     # ===== Footer =====
-    story.append(Paragraph("Thank you for your continued support.", center_style))
-    story.append(Spacer(1, 0.2*cm))
-    story.append(Paragraph("Payment instructions:", normal_style))
-    story.append(Paragraph("Bank: Equity Bank | Account: 1234567890 | Branch: Nairobi", normal_style))
+    if tenant_config.footer_text:
+        story.append(Paragraph(escape(tenant_config.footer_text), center_style))
     story.append(Spacer(1, 0.2*cm))
     story.append(Paragraph("This is a computer-generated invoice.", normal_style))
     

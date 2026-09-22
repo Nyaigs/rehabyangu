@@ -1,121 +1,23 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/Button';
+import { Field, SelectField } from './ui/FormFields';
+import { ErrorBanner } from './ErrorBanner';
 
-const patientSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  date_of_birth: z.string().min(1, 'Date of birth is required'),
-  gender: z.enum(['M', 'F', 'O']),
-  phone: z.string().min(1, 'Phone is required'),
-  email: z.string().email('Invalid email').optional(),
-  address: z.string().optional(),
-  emergency_contact_name: z.string().optional(),
-  emergency_contact_phone: z.string().optional(),
-  referring_doctor: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type PatientFormInputs = z.infer<typeof patientSchema>;
-
-interface Props {
-  onClose: () => void;
+const schema = z.object({ first_name: z.string().min(1, 'First name is required'), last_name: z.string().min(1, 'Last name is required'), date_of_birth: z.string().min(1, 'Date of birth is required'), gender: z.enum(['M', 'F', 'O']), phone: z.string().min(7, 'Enter a valid phone number'), email: z.string().email('Enter a valid email').or(z.literal('')), emergency_contact_name: z.string().optional(), emergency_contact_phone: z.string().optional(), next_of_kin_relationship: z.string().optional(), care_type: z.enum(['inpatient', 'outpatient', 'day_patient', 'new_referral']), preferred_visit_days: z.array(z.string()).optional(), expected_frequency: z.string().optional(), referral_source: z.string().optional() });
+type Values = z.infer<typeof schema>;
+export default function PatientForm({ onClose }: { onClose: () => void }) {
+  const client = useQueryClient();
+  const [createdInpatient, setCreatedInpatient] = useState<number | null>(null);
+  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { gender: 'M', email: '', care_type: 'new_referral', preferred_visit_days: [] } });
+  const careType = form.watch('care_type');
+  const mutation = useMutation({ mutationFn: (values: Values) => api.post('/patients/', values), onSuccess: ({ data }, values) => { client.invalidateQueries({ queryKey: ['patients'] }); if (values.care_type === 'inpatient') setCreatedInpatient(data.id); else onClose(); } });
+  const error = mutation.error as any;
+  if (createdInpatient) return <Modal open onOpenChange={(open) => !open && onClose()} title="Patient registered"><div className="space-y-4"><p className="text-sm text-secondary-600">This inpatient needs an admission before their stay begins. Continue to the admission workflow now.</p><div className="flex justify-end gap-3"><Button variant="secondary" className="w-auto" onClick={onClose}>Later</Button><Button className="w-auto" onClick={() => { window.location.assign(`/admissions?patient=${createdInpatient}`); }}>Create admission</Button></div></div></Modal>;
+  return <Modal open onOpenChange={(open) => !open && onClose()} title="New patient"><form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4"><section><h3 className="mb-3 text-sm font-semibold text-secondary-800">Identity</h3><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="First name" placeholder="Amina" error={form.formState.errors.first_name?.message} {...form.register('first_name')} /><Field label="Last name" placeholder="Otieno" error={form.formState.errors.last_name?.message} {...form.register('last_name')} /><Field label="Date of birth" type="date" error={form.formState.errors.date_of_birth?.message} {...form.register('date_of_birth')} /><SelectField label="Gender" error={form.formState.errors.gender?.message} {...form.register('gender')}><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></SelectField></div></section><section><h3 className="mb-3 text-sm font-semibold text-secondary-800">Contact</h3><Field label="Phone" placeholder="0712 345 678" error={form.formState.errors.phone?.message} {...form.register('phone')} /></section><section><h3 className="mb-3 text-sm font-semibold text-secondary-800">Emergency contact</h3><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Name" {...form.register('emergency_contact_name')} /><Field label="Phone" {...form.register('emergency_contact_phone')} /><Field label="Relationship" {...form.register('next_of_kin_relationship')} /></div></section><section><h3 className="mb-3 text-sm font-semibold text-secondary-800">Care</h3><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><SelectField label="Care type" error={form.formState.errors.care_type?.message} {...form.register('care_type')}><option value="inpatient">Inpatient</option><option value="outpatient">Outpatient</option><option value="day_patient">Day Patient</option><option value="new_referral">New Referral</option></SelectField><Field label="Referral source" placeholder="Optional" {...form.register('referral_source')} /></div>{careType === 'inpatient' && <p className="mt-2 text-xs text-secondary-600">An admission will be required. You can create it immediately after registration.</p>}{(careType === 'outpatient' || careType === 'day_patient') && <><Field label="Expected visit frequency" className="mt-3" placeholder="e.g. Twice weekly" {...form.register('expected_frequency')} /><fieldset className="mt-3"><legend className="form-label">Preferred visit days</legend><div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">{['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => <label key={day} className="inline-flex items-center gap-1.5 text-xs text-secondary-700"><input type="checkbox" value={day.toLowerCase()} {...form.register('preferred_visit_days')} />{day}</label>)}</div></fieldset></>}</section>{error && <ErrorBanner>{error.response?.data?.error || error.response?.data?.detail || 'We could not save this patient. Please try again.'}</ErrorBanner>}<div className="flex justify-end gap-3"><Button type="button" variant="secondary" className="w-auto" onClick={onClose}>Cancel</Button><Button type="submit" className="w-auto" isLoading={mutation.isPending}>Save patient</Button></div></form></Modal>;
 }
-
-const PatientForm: React.FC<Props> = ({ onClose }) => {
-  const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PatientFormInputs>({
-    resolver: zodResolver(patientSchema),
-  });
-
-  const mutation = useMutation({
-    mutationFn: (data: PatientFormInputs) => api.post('/patients/', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
-      onClose();
-    },
-  });
-
-  const onSubmit = (data: PatientFormInputs) => {
-    mutation.mutate(data);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Add New Patient</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium">First Name *</label>
-              <input {...register('first_name')} className="w-full border rounded px-3 py-2" />
-              {errors.first_name && <p className="text-red-500 text-sm">{errors.first_name.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Last Name *</label>
-              <input {...register('last_name')} className="w-full border rounded px-3 py-2" />
-              {errors.last_name && <p className="text-red-500 text-sm">{errors.last_name.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Date of Birth *</label>
-              <input type="date" {...register('date_of_birth')} className="w-full border rounded px-3 py-2" />
-              {errors.date_of_birth && <p className="text-red-500 text-sm">{errors.date_of_birth.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Gender *</label>
-              <select {...register('gender')} className="w-full border rounded px-3 py-2">
-                <option value="">Select</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="O">Other</option>
-              </select>
-              {errors.gender && <p className="text-red-500 text-sm">{errors.gender.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Phone *</label>
-              <input {...register('phone')} className="w-full border rounded px-3 py-2" />
-              {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input type="email" {...register('email')} className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Address</label>
-              <input {...register('address')} className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Emergency Contact Name</label>
-              <input {...register('emergency_contact_name')} className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Emergency Contact Phone</label>
-              <input {...register('emergency_contact_phone')} className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Referring Doctor</label>
-              <input {...register('referring_doctor')} className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Notes</label>
-              <textarea {...register('notes')} className="w-full border rounded px-3 py-2" rows={3} />
-            </div>
-            <div className="flex gap-2 pt-2">
-              <button type="submit" disabled={isSubmitting} className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-                {isSubmitting ? 'Saving...' : 'Save Patient'}
-              </button>
-              <button type="button" onClick={onClose} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default PatientForm;

@@ -1,95 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from '@tanstack/react-router';
-import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  UserCircleIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
-} from '@heroicons/react/24/outline';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { ArrowRightOnRectangleIcon, ChevronDownIcon, Cog6ToothIcon, MagnifyingGlassIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
+import { usePermission } from '../../hooks/usePermission';
 import NotificationBell from '../NotificationBell';
+import api from '../../api/client';
 
-const Header: React.FC = () => {
-  const { user, logout } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+const pageTitles: Record<string, string> = { '/': 'Dashboard', '/admin': 'Platform overview', '/admin/plans': 'Subscription plans', '/patients': 'Patients', '/admissions': 'Admissions', '/clinical-notes': 'Clinical Notes', '/vitals': 'Vitals', '/medications': 'Medication', '/appointments': 'Appointments', '/billing': 'Billing', '/inventory': 'Inventory', '/reports': 'Reports', '/staff': 'Staff', '/settings': 'Settings', '/help': 'Documentation', '/profile': 'Profile' };
+const titleFor = (pathname: string) => pathname.startsWith('/patients/') ? 'Patient record' : pathname.startsWith('/admin/tenants/') ? 'Tenant administration' : pageTitles[pathname] || 'RehabYangu';
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <header className="h-12 bg-white border-b border-secondary-200 px-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-      <div className="flex items-center gap-3 flex-1">
-        <div className="hidden md:flex items-center gap-2 bg-secondary-50 border border-secondary-200 rounded-md px-2.5 py-1 w-64 lg:w-72 transition-all focus-within:border-primary-600 focus-within:ring-1 focus-within:ring-primary-200">
-          <MagnifyingGlassIcon className="w-3.5 h-3.5 text-secondary-400" />
-          <input
-            type="text"
-            placeholder="Search patients, appointments..."
-            className="bg-transparent border-none outline-none text-sm w-full text-secondary-700 placeholder-secondary-400"
-          />
-          <kbd className="text-[10px] text-secondary-400 border border-secondary-200 rounded px-1">⌘K</kbd>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <NotificationBell />
-        <button className="p-1.5 rounded-md hover:bg-secondary-100 text-secondary-500 transition-colors">
-          <PlusIcon className="w-3.5 h-3.5" />
-        </button>
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-1.5 p-1 rounded-full hover:bg-secondary-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-200"
-          >
-            <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold">
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <span className="hidden sm:inline text-xs font-medium text-secondary-700">
-              {user?.username}
-            </span>
-          </button>
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-dropdown border border-secondary-100 overflow-hidden z-50">
-              <div className="p-2.5 border-b border-secondary-100">
-                <p className="text-xs font-semibold text-secondary-800">{user?.username}</p>
-                <p className="text-[11px] text-secondary-500">{user?.email}</p>
-              </div>
-              <div className="p-1">
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-secondary-700 hover:bg-secondary-50 rounded transition-colors"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <UserCircleIcon className="w-3.5 h-3.5" /> Profile
-                </Link>
-                <Link
-                  to="/settings"
-                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-secondary-700 hover:bg-secondary-50 rounded transition-colors"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <Cog6ToothIcon className="w-3.5 h-3.5" /> Settings
-                </Link>
-                <button
-                  onClick={() => { setShowUserMenu(false); logout(); }}
-                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger-light rounded w-full transition-colors"
-                >
-                  <ArrowRightOnRectangleIcon className="w-3.5 h-3.5" /> Logout
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-};
-
-export default Header;
+export default function Header() {
+  const { user, logout, tenantName, isPlatformAdmin, displayRole } = useAuth(); const { pathname } = useLocation(); const navigate = useNavigate(); const canCreatePatient = usePermission('patient.write');
+  const [showUserMenu, setShowUserMenu] = useState(false); const menuRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState(''); const [results, setResults] = useState<any[]>([]); const [searchOpen, setSearchOpen] = useState(false); const [searching, setSearching] = useState(false); const [activeResult, setActiveResult] = useState(-1); const searchRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { const close = (event: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(event.target as Node)) setShowUserMenu(false); if (searchRef.current && !searchRef.current.contains(event.target as Node)) setSearchOpen(false); }; const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setShowUserMenu(false); setSearchOpen(false); } }; document.addEventListener('mousedown', close); document.addEventListener('keydown', escape); return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', escape); }; }, []);
+  useEffect(() => { if (isPlatformAdmin || !search.trim()) { setResults([]); setSearching(false); return; } const controller = new AbortController(); const timer = window.setTimeout(async () => { setSearching(true); try { const { data } = await api.get('/patients/', { params: { search: search.trim(), page_size: 6 }, signal: controller.signal }); setResults(data.results || []); setSearchOpen(true); setActiveResult(-1); } catch (error: any) { if (error?.code !== 'ERR_CANCELED') setResults([]); } finally { if (!controller.signal.aborted) setSearching(false); } }, 300); return () => { controller.abort(); clearTimeout(timer); }; }, [search, isPlatformAdmin]);
+  const submitSearch = () => { setSearchOpen(false); navigate({ to: '/patients', search: { search: search.trim() } as never }); };
+  const openPatient = (patient: any) => { setSearchOpen(false); setSearch(''); navigate({ to: '/patients/$id', params: { id: String(patient.id) } }); };
+  const handleSearchKey = (event: React.KeyboardEvent<HTMLInputElement>) => { if (event.key === 'Escape') { setSearchOpen(false); return; } if (event.key === 'ArrowDown') { event.preventDefault(); setSearchOpen(true); setActiveResult((current) => Math.min(current + 1, results.length - 1)); } if (event.key === 'ArrowUp') { event.preventDefault(); setActiveResult((current) => Math.max(current - 1, 0)); } if (event.key === 'Enter') { event.preventDefault(); activeResult >= 0 && results[activeResult] ? openPatient(results[activeResult]) : submitSearch(); } };
+  const pageTitle = titleFor(pathname);
+  return <header className="sticky top-0 z-20 flex h-[72px] items-center justify-between gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur md:px-8"><div className="min-w-0 pl-12 lg:pl-0"><p className="truncate text-sm font-semibold text-ink-primary">{tenantName || 'RehabYangu'}</p><div className="flex min-w-0 gap-2 text-caption text-ink-secondary"><span>{isPlatformAdmin ? 'Weiraro Technologies' : displayRole}</span><span>·</span><span className="truncate">{pageTitle}</span></div></div>{!isPlatformAdmin && <div className="relative hidden flex-1 justify-center lg:flex" ref={searchRef}><label className="relative block w-full max-w-md"><span className="sr-only">Search patients</span><MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" /><input aria-label="Search patients by name, ID, or phone" value={search} onChange={(event) => setSearch(event.target.value)} onFocus={() => search.trim() && setSearchOpen(true)} onKeyDown={handleSearchKey} placeholder="Search patients" className="h-11 w-full rounded-input border border-border bg-background py-2 pl-10 pr-16 text-secondary text-ink-secondary placeholder:text-ink-muted" />{searching && <span className="absolute right-3 top-3 text-xs text-ink-secondary">Searching…</span>}</label>{searchOpen && <div role="listbox" className="absolute top-12 w-full max-w-md overflow-hidden rounded-card border border-border bg-surface shadow-dropdown">{results.length ? results.map((patient, index) => <button key={patient.id} role="option" aria-selected={index === activeResult} onMouseDown={() => openPatient(patient)} className={`flex w-full items-center gap-3 px-3 py-2.5 text-left ${index === activeResult ? 'bg-secondary-100' : 'hover:bg-secondary-50'}`}><span className="grid h-8 w-8 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">{patient.first_name?.[0]}{patient.last_name?.[0]}</span><span className="min-w-0"><span className="block truncate text-sm font-semibold text-ink-primary">{patient.first_name} {patient.last_name}</span><span className="block font-mono text-xs text-ink-secondary">{patient.patient_id || `PT-${patient.id}`}</span></span><span className="ml-auto text-xs text-ink-secondary">{patient.status || 'Registered'}</span></button>) : <p className="px-3 py-3 text-sm text-ink-secondary">No results</p>}<button onMouseDown={submitSearch} className="w-full border-t border-border px-3 py-2 text-left text-xs font-semibold text-primary hover:bg-secondary-50">View all matches</button></div>}</div>}<div className="flex items-center gap-2">{!isPlatformAdmin && <><button onClick={() => navigate({ to: '/patients' })} disabled={!canCreatePatient} title={canCreatePatient ? 'Register patient' : 'You do not have permission to register a patient'} className="hidden min-h-11 items-center gap-2 rounded-btn px-3.5 text-sm font-semibold text-white shadow-card transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60 sm:inline-flex" style={{ backgroundColor: 'var(--tenant-primary)' }}><PlusIcon className="h-4 w-4" />Register patient</button><NotificationBell /></>}<div className="relative" ref={menuRef}><button onClick={() => setShowUserMenu((value) => !value)} aria-expanded={showUserMenu} aria-haspopup="menu" className="flex min-h-11 items-center gap-2 rounded-btn px-1.5 hover:bg-secondary-100"><span className="grid h-8 w-8 place-items-center rounded-full text-xs font-bold" style={{ backgroundColor: 'color-mix(in srgb, var(--tenant-primary) 14%, white)', color: 'var(--tenant-primary)' }}>{user?.username?.charAt(0).toUpperCase() || 'U'}</span><span className="hidden max-w-32 text-left sm:block"><span className="block truncate text-caption font-semibold normal-case tracking-normal text-ink-primary">{user?.username || 'User'}</span><span className="block text-caption font-normal normal-case tracking-normal text-ink-secondary">{isPlatformAdmin ? 'Platform administrator' : displayRole}</span></span><ChevronDownIcon className="hidden h-4 w-4 text-ink-secondary sm:block" /></button>{showUserMenu && <div role="menu" className="absolute right-0 mt-2 w-56 rounded-card border border-border bg-surface p-1.5 shadow-dropdown"><div className="border-b border-border px-3 py-2.5"><p className="truncate text-secondary font-semibold text-ink-primary">{user?.username}</p><p className="truncate text-caption font-normal normal-case tracking-normal text-ink-secondary">{user?.email}</p></div><Link to="/profile" role="menuitem" onClick={() => setShowUserMenu(false)} className="mt-1 flex min-h-11 items-center gap-2 rounded-btn px-3 text-secondary text-ink-secondary hover:bg-secondary-50"><UserCircleIcon className="h-4 w-4" />Profile</Link>{!isPlatformAdmin && <Link to="/settings" role="menuitem" onClick={() => setShowUserMenu(false)} className="flex min-h-11 items-center gap-2 rounded-btn px-3 text-secondary text-ink-secondary hover:bg-secondary-50"><Cog6ToothIcon className="h-4 w-4" />Settings</Link>}<button role="menuitem" onClick={async () => { setShowUserMenu(false); await logout(); }} className="flex min-h-11 w-full items-center gap-2 rounded-btn px-3 text-left text-secondary text-danger hover:bg-danger-subtle"><ArrowRightOnRectangleIcon className="h-4 w-4" />Sign out</button></div>}</div></div></header>;
+}

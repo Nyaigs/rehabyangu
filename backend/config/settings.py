@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,12 +26,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)+^p8^7&ihu1p&wpjpnop_&zdz#vg5rm)kiy+409lgt5dt2%$f'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = []
+# Local Docker services may address Django as `backend`, while the development
+# gateway preserves the browser-facing host (`localhost` or `127.0.0.1`).
+# Production hostnames must be supplied explicitly through ALLOWED_HOSTS; do
+# not use a wildcard because Host validation is part of the API boundary.
+INTERNAL_ALLOWED_HOSTS = {'localhost', '127.0.0.1', '0.0.0.0', 'backend'}
+ALLOWED_HOSTS = sorted(INTERNAL_ALLOWED_HOSTS | {
+    host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()
+})
 
 
 # Application definition
@@ -45,6 +53,7 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     # Our apps
     'patients',
@@ -55,6 +64,7 @@ INSTALLED_APPS = [
     'tenants',
     'inventory',
     'vitals',
+    'medications',
     'users',
     'subscriptions',
     'authorization',
@@ -63,6 +73,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'users.middleware.TenantRLSMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,7 +82,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,https://app.rehabyangu.com'
+    ).split(',') if origin.strip()
+]
+# The browser preflights the non-simple X-Tenant header before the login POST.
+# curl does not preflight, which is why curl can work while the React app fails.
+CORS_ALLOW_HEADERS = [*default_headers, 'x-tenant']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -85,15 +103,34 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
     ),
+    'EXCEPTION_HANDLER': 'config.exceptions.api_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '60/minute',
+        'login': '10/minute',
+        'invitation_accept': '5/minute',
+    },
 }
 
 # JWT settings (optional, can add expiry)
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
+
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@rehabyangu.local')
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+MFA_ENCRYPTION_KEY = os.getenv('MFA_ENCRYPTION_KEY', '')
 
 ROOT_URLCONF = 'config.urls'
 
@@ -117,11 +154,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 DATABASES = {
     'default': {
@@ -164,8 +196,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Keep model defaults aligned with the existing migrations, including the
+# Phase 3 EMR tables, and avoid accidental primary-key alteration migrations.
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

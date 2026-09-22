@@ -1,250 +1,50 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  BeakerIcon,
-  ClipboardDocumentListIcon,
-  WrenchScrewdriverIcon,
-  HeartIcon,
-  InformationCircleIcon,
-  DocumentTextIcon,
-  PlusIcon,
-  ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CreditCardIcon, PlusIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import api from '../api/client';
 import InvoiceList from '../components/InvoiceList';
-import { useToast } from '../context/ToastContext';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent } from '../components/ui/card';
+import { Field, SelectField } from '../components/ui/FormFields';
+import { Modal } from '../components/ui/Modal';
+import { Badge } from '../components/ui/Badge';
+import { ErrorBanner } from '../components/ErrorBanner';
 import { EmptyState } from '../components/EmptyState';
-import { SkeletonText } from '../components/Skeleton';
+import { SkeletonCard } from '../components/Skeleton';
+import { usePermission } from '../hooks/usePermission';
+import { useAuth } from '../context/AuthContext';
 
-const fetchPatients = async () => {
-  const { data } = await api.get('/patients/');
-  return data;
-};
+const chargeSchema = z.object({ item_id: z.coerce.number().positive('Select an item or service'), quantity: z.coerce.number().int().min(1, 'Quantity must be at least 1') });
+const paymentSchema = z.object({ amount: z.coerce.number().positive('Enter an amount greater than zero'), method: z.enum(['MPESA', 'CASH', 'BANK']), reference: z.string().min(2, 'Enter a receipt or transaction reference') });
+type ChargeValues = z.infer<typeof chargeSchema>; type PaymentValues = z.infer<typeof paymentSchema>;
+const money = (value: string | number = 0) => `KES ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const fetchInventory = async () => {
-  const { data } = await api.get('/inventory/');
-  return data;
-};
+function ChargeModal({ patientId, inventory, onClose }: { patientId: number; inventory: any[]; onClose: () => void }) {
+  const client = useQueryClient(); const form = useForm<ChargeValues>({ resolver: zodResolver(chargeSchema) as any, defaultValues: { quantity: 1 } });
+  const mutation = useMutation({ mutationFn: (values: ChargeValues) => api.post('/charge/', { patient_id: patientId, ...values }), onSuccess: () => { client.invalidateQueries({ queryKey: ['patient-bill', patientId] }); client.invalidateQueries({ queryKey: ['inventory'] }); onClose(); } });
+  return <Modal open onOpenChange={open => !open && onClose()} title="Add charge"><form className="space-y-4" onSubmit={form.handleSubmit(values => mutation.mutate(values))}><SelectField label="Item or service" error={form.formState.errors.item_id?.message} {...form.register('item_id')}><option value="">Select an item or service</option>{inventory.map(item => <option value={item.id} key={item.id}>{item.name} · {money(item.unit_price)}{item.category === 'SERVICE' ? '' : ` · ${item.current_stock} in stock`}</option>)}</SelectField><Field label="Quantity" type="number" min="1" error={form.formState.errors.quantity?.message} {...form.register('quantity')} />{mutation.isError && <ErrorBanner>Unable to add this charge. Check availability and try again.</ErrorBanner>}<div className="flex justify-end gap-3"><Button type="button" variant="secondary" className="w-auto" onClick={onClose}>Cancel</Button><Button className="w-auto" isLoading={mutation.isPending}>Add charge</Button></div></form></Modal>;
+}
+function PaymentModal({ patientId, balance, onClose }: { patientId: number; balance: number; onClose: () => void }) {
+  const client = useQueryClient(); const form = useForm<PaymentValues>({ resolver: zodResolver(paymentSchema) as any, defaultValues: { method: 'MPESA', amount: balance || undefined } });
+  const mutation = useMutation({ mutationFn: (values: PaymentValues) => api.post(`/patient-bill/${patientId}/payments/`, values), onSuccess: () => { client.invalidateQueries({ queryKey: ['patient-bill', patientId] }); client.invalidateQueries({ queryKey: ['invoices'] }); onClose(); } });
+  return <Modal open onOpenChange={open => !open && onClose()} title="Record payment"><form className="space-y-4" onSubmit={form.handleSubmit(values => mutation.mutate(values))}><p className="rounded-lg bg-secondary-50 p-3 text-sm text-secondary-600">Outstanding balance: <strong>{money(balance)}</strong></p><Field label="Amount" type="number" step="0.01" min="0.01" error={form.formState.errors.amount?.message} {...form.register('amount')} /><SelectField label="Payment method" error={form.formState.errors.method?.message} {...form.register('method')}><option value="MPESA">M-Pesa</option><option value="CASH">Cash</option><option value="BANK">Bank transfer</option></SelectField><Field label="Receipt / transaction reference" placeholder="e.g. QGH82K4F" error={form.formState.errors.reference?.message} {...form.register('reference')} />{mutation.isError && <ErrorBanner>Unable to record this payment. Ensure it does not exceed the balance.</ErrorBanner>}<div className="flex justify-end gap-3"><Button type="button" variant="secondary" className="w-auto" onClick={onClose}>Cancel</Button><Button className="w-auto" isLoading={mutation.isPending}>Record payment</Button></div></form></Modal>;
+}
 
-const fetchPatientBill = async (patientId: number) => {
-  const { data } = await api.get(`/patient-bill/${patientId}/`);
-  return data;
-};
-
-const Billing: React.FC = () => {
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<'charges' | 'invoices'>('charges');
-
-  const { data: patients, isLoading: patientsLoading } = useQuery({ queryKey: ['patients'], queryFn: fetchPatients });
-  const { data: inventory, isLoading: inventoryLoading } = useQuery({ queryKey: ['inventory'], queryFn: fetchInventory });
-  const { data: bill, refetch: refetchBill } = useQuery({
-    queryKey: ['patient-bill', selectedPatient],
-    queryFn: () => fetchPatientBill(selectedPatient!),
-    enabled: !!selectedPatient,
-  });
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedPatient || !selectedItem || quantity <= 0) throw new Error('Invalid input');
-      const response = await api.post('/charge/', {
-        patient_id: selectedPatient,
-        item_id: selectedItem,
-        quantity: quantity,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      refetchBill();
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      toast.showToast('Charge applied successfully!', 'success');
-    },
-    onError: (error: any) => {
-      toast.showToast(error.response?.data?.error || 'Failed to charge patient', 'error');
-    },
-  });
-
-  const handleCharge = () => {
-    if (!selectedPatient || !selectedItem || quantity <= 0) {
-      toast.showToast('Please select patient, item, and quantity', 'warning');
-      return;
-    }
-    mutation.mutate();
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'DRUG': return BeakerIcon;
-      case 'CONSUMABLE': return ClipboardDocumentListIcon;
-      case 'EQUIPMENT': return WrenchScrewdriverIcon;
-      case 'SERVICE': return HeartIcon;
-      default: return ClipboardDocumentListIcon;
-    }
-  };
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'DRUG': return 'Drug';
-      case 'CONSUMABLE': return 'Consumable';
-      case 'EQUIPMENT': return 'Equipment';
-      case 'SERVICE': return 'Service';
-      default: return 'Item';
-    }
-  };
-
-  const getItemOptionLabel = (item: any) => {
-    const categoryLabel = getCategoryLabel(item.category);
-    if (item.category === 'SERVICE') {
-      return `${categoryLabel}: ${item.name} (KES ${item.unit_price})`;
-    }
-    return `${categoryLabel}: ${item.name} (Stock: ${item.current_stock}, KES ${item.unit_price})`;
-  };
-
-  const selectedItemData = inventory?.find((i: any) => i.id === selectedItem);
-
-  if (patientsLoading || inventoryLoading) {
-    return (
-      <div className="space-y-4">
-        <SkeletonText width="w-48" className="mb-1" />
-        <SkeletonText width="w-64" />
-        <div className="card p-4"><SkeletonText width="w-full" className="h-8" /></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-secondary-800">Billing & Charges</h1>
-        <p className="text-sm text-secondary-500">Manage patient charges, invoices, and payments</p>
-      </div>
-
-      <div className="card p-4">
-        <label className="form-label">Select Patient</label>
-        <select
-          className="input-field max-w-md"
-          value={selectedPatient || ''}
-          onChange={(e) => setSelectedPatient(Number(e.target.value))}
-        >
-          <option value="">Select patient</option>
-          {patients?.map((p: any) => (
-            <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
-          ))}
-        </select>
-        {bill && (
-          <div className="mt-2 text-sm font-medium">
-            Current Balance: <span className="text-primary-600">KES {bill.total_balance}</span>
-          </div>
-        )}
-      </div>
-
-      {selectedPatient && (
-        <>
-          <div className="border-b border-secondary-200">
-            <div className="flex gap-4">
-              <button
-                onClick={() => setActiveTab('charges')}
-                className={`pb-2 px-2 text-sm font-medium flex items-center gap-1.5 ${
-                  activeTab === 'charges' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-secondary-500 hover:text-secondary-700'
-                }`}
-              >
-                <PlusIcon className="w-4 h-4" />
-                Charges
-              </button>
-              <button
-                onClick={() => setActiveTab('invoices')}
-                className={`pb-2 px-2 text-sm font-medium flex items-center gap-1.5 ${
-                  activeTab === 'invoices' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-secondary-500 hover:text-secondary-700'
-                }`}
-              >
-                <DocumentTextIcon className="w-4 h-4" />
-                Invoices
-              </button>
-            </div>
-          </div>
-
-          {activeTab === 'charges' && (
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-start gap-3 text-sm text-blue-800">
-                <InformationCircleIcon className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p><strong>Services</strong> do not deduct stock. Only physical items reduce inventory.</p>
-              </div>
-
-              <div className="card p-4 max-w-xl">
-                <div className="space-y-4">
-                  <div>
-                    <label className="form-label">Item / Service</label>
-                    <select
-                      className="input-field"
-                      value={selectedItem || ''}
-                      onChange={(e) => setSelectedItem(Number(e.target.value))}
-                    >
-                      <option value="">Select item or service</option>
-                      {inventory?.map((item: any) => (
-                        <option key={item.id} value={item.id}>
-                          {getItemOptionLabel(item)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="form-label">Quantity</label>
-                    <input
-                      type="number"
-                      className="input-field"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      min="1"
-                    />
-                    {selectedItemData?.category === 'SERVICE' && (
-                      <p className="text-xs text-secondary-500 mt-1">Services do not affect stock levels.</p>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleCharge}
-                    disabled={mutation.isPending}
-                    className="btn-primary w-full justify-center"
-                  >
-                    {mutation.isPending ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Processing</> : 'Charge Patient'}
-                  </button>
-                </div>
-              </div>
-
-              {bill && bill.items && bill.items.length > 0 ? (
-                <div className="card p-4">
-                  <h3 className="text-sm font-semibold text-secondary-700 mb-3">Recent Charges</h3>
-                  <ul className="divide-y divide-secondary-100">
-                    {bill.items.slice().reverse().map((item: any) => {
-                      const Icon = getCategoryIcon(item.category || '');
-                      return (
-                        <li key={item.id} className="py-2 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Icon className="w-4 h-4 text-secondary-400" />
-                            <span className="font-medium text-secondary-800">{item.item_name}</span>
-                            <span className="badge badge-draft text-[10px]">{getCategoryLabel(item.category || '')}</span>
-                            <span className="text-xs text-secondary-500">x{item.quantity}</span>
-                          </div>
-                          <span className="font-medium text-secondary-800">KES {item.subtotal}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ) : (
-                <EmptyState title="No charges yet" description="Select a patient and charge an item." iconType="inbox" />
-              )}
-            </div>
-          )}
-
-          {activeTab === 'invoices' && <InvoiceList patientId={selectedPatient} />}
-        </>
-      )}
-    </div>
-  );
-};
-
-export default Billing;
+export default function Billing() {
+  const [patientId, setPatientId] = useState<number | null>(null); const [chargeOpen, setChargeOpen] = useState(false); const [paymentOpen, setPaymentOpen] = useState(false);
+  const { isRehabAdmin } = useAuth();
+  // The API's canonical billing permission is `billing.write`.  The former
+  // invoice.* checks hid all billing actions from normal Billing users and
+  // tenant administrators even though their API calls were authorised.
+  const canWrite = isRehabAdmin || usePermission('billing.write');
+  const patients = useQuery({ queryKey: ['patients'], queryFn: async () => { const { data } = await api.get('/patients/', { params: { page_size: 100 } }); return data.results || data; } });
+  const inventory = useQuery({ queryKey: ['inventory'], queryFn: async () => (await api.get('/inventory/')).data });
+  const bill = useQuery({ queryKey: ['patient-bill', patientId], queryFn: async () => (await api.get(`/patient-bill/${patientId}/`)).data, enabled: patientId !== null });
+  const selected = patients.data?.find((patient: any) => patient.id === patientId); const balance = Number(bill.data?.total_balance || 0);
+  if (patients.isLoading || inventory.isLoading) return <div className="space-y-4"><SkeletonCard count={2} /></div>;
+  if (patients.isError || inventory.isError) return <ErrorBanner>We could not load billing setup data. Refresh the page or try again.</ErrorBanner>;
+  return <div className="space-y-5"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-bold text-secondary-800">Billing &amp; charges</h1><p className="text-sm text-secondary-500">Review balances, issue tenant-branded invoices, and record payments.</p></div>{patientId && canWrite && <div className="flex gap-2"><Button variant="secondary" className="w-auto" onClick={() => setPaymentOpen(true)} disabled={balance <= 0}><CreditCardIcon className="h-4 w-4" />Record payment</Button><Button className="w-auto" onClick={() => setChargeOpen(true)}><PlusIcon className="h-4 w-4" />Add charge</Button></div>}</div><Card><CardContent className="p-4"><SelectField label="Patient account" value={patientId ?? ''} onChange={event => setPatientId(event.target.value ? Number(event.target.value) : null)}><option value="">Select a patient to manage their account</option>{patients.data?.map((patient: any) => <option value={patient.id} key={patient.id}>{patient.first_name} {patient.last_name} · {patient.patient_id || `PT-${patient.id}`}</option>)}</SelectField></CardContent></Card>{patientId ? <><div className="grid gap-4 sm:grid-cols-3"><Card><CardContent className="p-4"><p className="text-xs font-semibold uppercase tracking-wide text-secondary-500">Patient</p><p className="mt-1 font-semibold text-secondary-800">{selected?.first_name} {selected?.last_name}</p></CardContent></Card><Card><CardContent className="p-4"><p className="text-xs font-semibold uppercase tracking-wide text-secondary-500">Outstanding balance</p><p className="mt-1 text-xl font-bold text-secondary-800">{bill.isLoading ? '…' : money(balance)}</p></CardContent></Card><Card><CardContent className="p-4"><p className="text-xs font-semibold uppercase tracking-wide text-secondary-500">Account status</p><div className="mt-2"><Badge tone={balance > 0 ? 'warning' : 'success'}>{balance > 0 ? 'payment due' : 'settled'}</Badge></div></CardContent></Card></div><div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]"><InvoiceList patientId={patientId} patientName={`${selected?.first_name || ''} ${selected?.last_name || ''}`.trim()} canWrite={canWrite} /><Card><CardContent className="p-4"><div className="flex items-center gap-2"><ReceiptPercentIcon className="h-5 w-5 text-primary" /><h2 className="font-semibold text-secondary-800">Recent charges</h2></div>{bill.isLoading ? <div className="mt-4"><SkeletonCard /></div> : bill.data?.items?.length ? <ul className="mt-3 divide-y divide-secondary-100">{bill.data.items.slice(0, 6).map((item: any) => <li className="flex items-center justify-between gap-3 py-3 text-sm" key={item.id}><div className="min-w-0"><p className="truncate font-medium text-secondary-800">{item.item_name}</p><p className="text-xs text-secondary-500">{item.category} · Qty {item.quantity}</p></div><span className="shrink-0 font-semibold text-secondary-700">{money(item.subtotal)}</span></li>)}</ul> : <EmptyState title="No charges yet" description="Add a charge when care or supplies are provided." iconType="inbox" actionLabel={canWrite ? 'Add charge' : undefined} onAction={canWrite ? () => setChargeOpen(true) : undefined} />}</CardContent></Card></div></> : <EmptyState title="Choose a patient account" description="Select a patient to view charges, invoices, and payments." iconType="documents" />}{chargeOpen && <ChargeModal patientId={patientId!} inventory={inventory.data || []} onClose={() => setChargeOpen(false)} />}{paymentOpen && <PaymentModal patientId={patientId!} balance={balance} onClose={() => setPaymentOpen(false)} />}</div>;
+}

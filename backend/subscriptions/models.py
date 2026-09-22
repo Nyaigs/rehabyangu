@@ -3,6 +3,26 @@ from django.utils import timezone
 from tenants.models import Tenant
 from django.contrib.auth.models import User
 
+
+class SubscriptionPlan(models.Model):
+    """The platform-owned definition of a tenant subscription package."""
+    name = models.CharField(max_length=100)
+    code = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    price_monthly = models.DecimalField(max_digits=12, decimal_places=2)
+    # A null value deliberately means that the plan has no user cap.
+    max_users = models.PositiveIntegerField(null=True, blank=True)
+    feature_flags = models.JSONField(default=dict, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['price_monthly', 'name']
+
+    def __str__(self):
+        return self.name
+
 class Subscription(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE, related_name='subscription')
     plan = models.CharField(max_length=20, default='basic')
@@ -58,6 +78,9 @@ class Notification(models.Model):
     title = models.CharField(max_length=200)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
+    # Lifecycle jobs use this stable key to be safely repeatable.  Null keeps
+    # existing, manually-created notifications backwards compatible.
+    event_key = models.CharField(max_length=160, blank=True, null=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

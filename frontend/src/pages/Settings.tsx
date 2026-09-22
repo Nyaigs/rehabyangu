@@ -1,159 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import api from '../api/client';
-import { SkeletonText } from '../components/Skeleton';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ErrorBanner } from '../components/ErrorBanner';
+import { resolveMediaUrl } from '../api/client';
 
-const fetchConfig = async () => {
-  const { data } = await api.get('/tenant-config/');
-  return data;
-};
-
-const updateConfig = async (payload: any) => {
-  const { data } = await api.patch('/tenant-config/update/', payload);
-  return data;
-};
+const schema = z.object({ company_name: z.string().min(1, 'Facility name is required'), tagline: z.string(), logo: z.any().optional(), letterhead: z.any().optional() });
+type FormValues = z.infer<typeof schema>;
 
 const Settings: React.FC = () => {
+  const { isRehabAdmin, tenantBranding, setTenantBranding } = useAuth();
   const toast = useToast();
-  const queryClient = useQueryClient();
-  const { isRehabAdmin } = useAuth();
-
-  const { data: config, isLoading } = useQuery({
-    queryKey: ['tenant-config'],
-    queryFn: fetchConfig,
-    enabled: isRehabAdmin,
-  });
-
-  const [formData, setFormData] = useState({
-    company_name: '',
-    tagline: '',
-    primary_color: '#1d5a70',
-    secondary_color: '#2e9b6f',
-    accent_color: '#b8892f',
-    sidebar_color: '#0f2e3d',
-    footer_text: '',
-  });
-
-  useEffect(() => {
-    if (config) {
-      setFormData({
-        company_name: config.company_name || '',
-        tagline: config.tagline || '',
-        primary_color: config.primary_color || '#1d5a70',
-        secondary_color: config.secondary_color || '#2e9b6f',
-        accent_color: config.accent_color || '#b8892f',
-        sidebar_color: config.sidebar_color || '#0f2e3d',
-        footer_text: config.footer_text || '',
-      });
-    }
-  }, [config]);
-
-  const mutation = useMutation({
-    mutationFn: updateConfig,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenant-config'] });
-      toast.showToast('Settings updated successfully!', 'success');
-      // Update CSS variables
-      const root = document.documentElement;
-      root.style.setProperty('--primary-600', formData.primary_color);
-      root.style.setProperty('--primary-700', formData.sidebar_color);
-      root.style.setProperty('--accent', formData.secondary_color);
-      root.style.setProperty('--warning', formData.accent_color);
-    },
-    onError: () => toast.showToast('Failed to update settings', 'error'),
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate(formData);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [letterheadPreview, setLetterheadPreview] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState('');
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { company_name: '', tagline: '' } });
+  useEffect(() => { if (tenantBranding) reset({ company_name: tenantBranding.company_name || '', tagline: '' }); }, [tenantBranding, reset]);
+  const preview = (file: File | undefined, setter: (value: string | null) => void) => { if (file) setter(URL.createObjectURL(file)); };
+  const submit = async (values: FormValues) => {
+    setSubmitError('');
+    const body = new FormData();
+    body.append('company_name', values.company_name); body.append('tagline', values.tagline || '');
+    const logo = values.logo?.[0] as File | undefined; const letterhead = values.letterhead?.[0] as File | undefined;
+    if (logo) body.append('logo', logo); if (letterhead) body.append('letterhead', letterhead);
+    try { const { data } = await api.put('/tenant-config/', body); setTenantBranding(data); toast.showToast('Branding updated successfully', 'success'); }
+    catch (error: any) { const message = getApiError(error.response?.data) || 'Unable to update branding'; setSubmitError(message); toast.showToast(message, 'error'); }
   };
-
-  if (!isRehabAdmin) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-secondary-500">
-        <ExclamationTriangleIcon className="w-5 h-5 text-warning" />
-        You don't have permission to access settings.
-      </div>
-    );
-  }
-
-  if (isLoading) return <div className="space-y-4"><SkeletonText width="w-3/4" /><SkeletonText width="w-1/2" /></div>;
-
-  return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-secondary-800">Settings</h1>
-        <p className="text-sm text-secondary-500">Customise your rehab centre's branding and appearance.</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-        <div>
-          <label className="form-label">Company Name</label>
-          <input type="text" className="input-field" value={formData.company_name} onChange={(e) => setFormData({ ...formData, company_name: e.target.value })} />
-        </div>
-        <div>
-          <label className="form-label">Tagline</label>
-          <input type="text" className="input-field" value={formData.tagline} onChange={(e) => setFormData({ ...formData, tagline: e.target.value })} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Primary Color</label>
-            <div className="flex items-center gap-2">
-              <input type="color" className="w-10 h-10 p-0 border-0 rounded cursor-pointer" value={formData.primary_color} onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })} />
-              <input type="text" className="input-field flex-1" value={formData.primary_color} onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })} />
-            </div>
-          </div>
-          <div>
-            <label className="form-label">Secondary Color</label>
-            <div className="flex items-center gap-2">
-              <input type="color" className="w-10 h-10 p-0 border-0 rounded cursor-pointer" value={formData.secondary_color} onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })} />
-              <input type="text" className="input-field flex-1" value={formData.secondary_color} onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })} />
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Accent Color</label>
-            <div className="flex items-center gap-2">
-              <input type="color" className="w-10 h-10 p-0 border-0 rounded cursor-pointer" value={formData.accent_color} onChange={(e) => setFormData({ ...formData, accent_color: e.target.value })} />
-              <input type="text" className="input-field flex-1" value={formData.accent_color} onChange={(e) => setFormData({ ...formData, accent_color: e.target.value })} />
-            </div>
-          </div>
-          <div>
-            <label className="form-label">Sidebar Color</label>
-            <div className="flex items-center gap-2">
-              <input type="color" className="w-10 h-10 p-0 border-0 rounded cursor-pointer" value={formData.sidebar_color} onChange={(e) => setFormData({ ...formData, sidebar_color: e.target.value })} />
-              <input type="text" className="input-field flex-1" value={formData.sidebar_color} onChange={(e) => setFormData({ ...formData, sidebar_color: e.target.value })} />
-            </div>
-          </div>
-        </div>
-        <div>
-          <label className="form-label">Footer Text</label>
-          <input type="text" className="input-field" value={formData.footer_text} onChange={(e) => setFormData({ ...formData, footer_text: e.target.value })} />
-          <p className="text-xs text-secondary-500 mt-1">Appears at the bottom of every page.</p>
-        </div>
-        <button type="submit" disabled={mutation.isPending} className="btn-primary w-full justify-center">
-          {mutation.isPending ? 'Saving...' : 'Save Settings'}
-        </button>
-      </form>
-
-      <div className="card p-4">
-        <h3 className="text-sm font-semibold text-secondary-700 mb-2">Preview</h3>
-        <div className="p-3 rounded-lg" style={{ background: formData.primary_color, color: 'white' }}>
-          <p className="text-sm font-medium">{formData.company_name || 'Your Rehab'}</p>
-          <p className="text-xs opacity-80">{formData.tagline || 'Tagline'}</p>
-        </div>
-        <div className="mt-2 flex gap-2">
-          <button className="btn-primary text-xs" style={{ background: formData.primary_color }}>Primary</button>
-          <button className="btn-secondary text-xs" style={{ background: formData.secondary_color, color: 'white' }}>Secondary</button>
-          <button className="btn-danger text-xs">Danger</button>
-        </div>
-      </div>
-    </div>
-  );
+  if (!isRehabAdmin) return <div className="card p-6 text-sm text-secondary-500">Only your rehab administrator can update facility branding.</div>;
+  return <div className="max-w-3xl space-y-6"><div><h1 className="text-2xl font-bold text-secondary-800">Facility settings</h1><p className="text-sm text-secondary-500">Keep your team workspace and future documents on brand.</p></div><form onSubmit={handleSubmit(submit)} className="card space-y-6 p-6">{submitError && <ErrorBanner>{submitError}</ErrorBanner>}
+    <div className="grid gap-4 sm:grid-cols-2"><label><span className="form-label">Facility name</span><input className="input-field" {...register('company_name')} />{errors.company_name && <span className="text-xs text-danger">{errors.company_name.message}</span>}</label><label><span className="form-label">Tagline</span><input className="input-field" {...register('tagline')} placeholder="Exceptional care, connected" /></label></div>
+    <div className="grid gap-6 md:grid-cols-2"><Upload label="Header logo" hint="PNG, JPEG, WebP, SVG, or ICO; up to 2 MiB." current={logoPreview || resolveMediaUrl(tenantBranding?.logo_url)} accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" input={register('logo', { onChange: (event) => preview(event.target.files?.[0], setLogoPreview) })} /><Upload label="Letterhead" hint="PNG, JPEG, WebP, SVG, or ICO; up to 2 MiB." current={letterheadPreview || resolveMediaUrl(tenantBranding?.letterhead_url)} accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" input={register('letterhead', { onChange: (event) => preview(event.target.files?.[0], setLetterheadPreview) })} /></div>
+    <button disabled={isSubmitting} className="btn-primary">{isSubmitting ? 'Saving…' : 'Save branding'}</button>
+  </form></div>;
 };
-
+function Upload({ label, hint, current, accept, input }: { label: string; hint: string; current?: string | null; accept: string; input: any }) { return <label className="block"><span className="form-label">{label}</span><div className="mt-1 flex min-h-32 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">{current ? <img src={current} alt={`${label} preview`} className="max-h-28 max-w-full object-contain" /> : <span className="text-xs text-slate-400">No image selected</span>}</div><input type="file" accept={accept} className="mt-3 block w-full text-sm text-secondary-600" {...input} /><p className="mt-1 text-xs text-secondary-500">{hint}</p></label>; }
+function getApiError(data: unknown): string | null { if (!data || typeof data !== 'object') return null; const value = Object.values(data as Record<string, unknown>)[0]; return typeof value === 'string' ? value : Array.isArray(value) && typeof value[0] === 'string' ? value[0] : null; }
 export default Settings;

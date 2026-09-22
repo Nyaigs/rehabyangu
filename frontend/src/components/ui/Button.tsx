@@ -1,7 +1,8 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger";
+  size?: "sm" | "default" | "lg";
   isLoading?: boolean;
 }
 
@@ -12,26 +13,29 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { variant = "primary", isLoading = false, disabled, className = "", children, ...props },
+    { variant = "primary", size = "default", isLoading = false, disabled, className = "", children, ...props },
     ref
   ) => {
     const base =
-      "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 " +
+      "inline-flex items-center justify-center gap-2 rounded-btn " +
       "text-body font-semibold transition-all duration-150 ease-out " +
       "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " +
       "disabled:cursor-not-allowed disabled:opacity-60";
 
     const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
       primary:
-        "bg-primary text-white shadow-card hover:-translate-y-[1px] hover:bg-primary-hover hover:shadow-raised focus-visible:outline-primary",
+        "bg-primary text-white shadow-card hover:bg-primary-hover hover:shadow-raised focus-visible:outline-primary",
       secondary:
-        "bg-surface text-primary border border-border hover:-translate-y-[1px] hover:border-border-strong hover:shadow-card focus-visible:outline-primary",
+        "border border-border bg-surface text-primary hover:border-border-strong hover:shadow-card focus-visible:outline-primary",
+      danger:
+        "bg-danger text-white shadow-card hover:brightness-95 hover:shadow-raised focus-visible:outline-danger",
     };
+    const sizes = { sm: 'min-h-8 px-3 py-1.5 text-xs', default: 'min-h-11 px-4 py-2.5 text-body', lg: 'min-h-12 px-5 py-3 text-base' };
 
     return (
       <button
         ref={ref}
-        className={`${base} ${variants[variant]} ${className}`}
+        className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         {...props}
@@ -42,7 +46,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
               aria-hidden="true"
             />
-            <span>Signing in…</span>
+            <span>Loading…</span>
           </>
         ) : (
           children

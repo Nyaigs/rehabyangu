@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PatientBill, BillItem, Invoice
+from .models import PatientBill, BillItem, Invoice, Payment
 
 class BillItemSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='item.name', read_only=True)
@@ -22,3 +22,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = '__all__'
         read_only_fields = ('invoice_number', 'generated_at', 'sent_at', 'download_token', 'token_expiry')
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'bill', 'amount', 'method', 'reference', 'paid_at']
+        read_only_fields = ['id', 'bill', 'paid_at']

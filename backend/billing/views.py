@@ -1,4 +1,5 @@
 from users.permissions import IsInTenant
+from authorization.permissions import HasPermission
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView
 from rest_framework.response import Response
@@ -11,13 +12,17 @@ from django.conf import settings
 from django.http import HttpResponse, Http404  # Http404 added
 from .services import charge_patient
 from .models import PatientBill, Invoice
-from .serializers import PatientBillSerializer, InvoiceSerializer
+from .serializers import PatientBillSerializer, InvoiceSerializer, PaymentSerializer
 from patients.models import Patient
 from inventory.models import InventoryItem
 from .pdf_generator import generate_invoice_pdf
+from users.services import audit
 
 class ChargePatientView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -45,8 +50,10 @@ class ChargePatientView(APIView):
                 patient_id=patient_id,
                 item_id=item_id,
                 quantity=quantity,
-                administered_by=request.user.get_full_name() or request.user.username
+                administered_by=request.user.get_full_name() or request.user.username,
+                tenant=request.tenant,
             )
+            audit(actor=request.user, tenant=request.tenant, action='CREATE', request=request, description=f'Added billing charge for patient {patient_id}.')
             return Response({
                 'message': 'Charge applied successfully',
                 'new_balance': str(new_balance)
@@ -70,19 +77,60 @@ class ChargePatientView(APIView):
 class PatientBillView(RetrieveAPIView):
     queryset = PatientBill.objects.all()
     serializer_class = PatientBillSerializer
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated, IsInTenant]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
 
     def get_object(self):
         patient_id = self.kwargs.get('patient_id')
+        patient = get_object_or_404(Patient, id=patient_id, tenant=self.request.tenant)
         bill, created = PatientBill.objects.get_or_create(
-            patient_id=patient_id,
-            defaults={'tenant': request.tenant}
+            patient=patient,
+            defaults={'tenant': self.request.tenant}
         )
         return bill
 
+
+class RecordPaymentView(APIView):
+    """Record a patient payment and keep the bill and invoices in sync."""
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
+
+    def post(self, request, patient_id):
+        patient = get_object_or_404(Patient, id=patient_id, tenant=request.tenant)
+        bill, _ = PatientBill.objects.get_or_create(patient=patient, defaults={'tenant': request.tenant})
+        serializer = PaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        amount = serializer.validated_data['amount']
+        if amount <= 0:
+            return Response({'amount': 'Amount must be greater than zero.'}, status=status.HTTP_400_BAD_REQUEST)
+        if amount > bill.total_balance:
+            return Response({'amount': 'Payment cannot exceed the outstanding balance.'}, status=status.HTTP_400_BAD_REQUEST)
+        payment = serializer.save(bill=bill)
+        bill.total_balance -= amount
+        bill.save(update_fields=['total_balance', 'updated_at'])
+        remaining = amount
+        for invoice in bill.invoices.exclude(status='paid').order_by('generated_at'):
+            applied = min(invoice.total_amount - invoice.amount_paid, remaining)
+            invoice.amount_paid += applied
+            remaining -= applied
+            if invoice.amount_paid >= invoice.total_amount:
+                invoice.status = 'paid'
+            invoice.save(update_fields=['amount_paid', 'status'])
+            if remaining <= 0:
+                break
+        audit(actor=request.user, tenant=request.tenant, action='CREATE', request=request, instance=payment, description=f'Recorded payment for patient {patient.id}.')
+        return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+
 class InvoiceListView(ListAPIView):
     serializer_class = InvoiceSerializer
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
 
     def get_queryset(self):
         patient_id = self.request.query_params.get('patient')
@@ -90,18 +138,21 @@ class InvoiceListView(ListAPIView):
             try:
                 bill = PatientBill.objects.get(
                     patient_id=patient_id,
-                    tenant=request.tenant
+                    tenant=self.request.tenant
                 )
                 return Invoice.objects.filter(bill=bill).order_by('-generated_at')
             except PatientBill.DoesNotExist:
                 return Invoice.objects.none()
         return Invoice.objects.filter(
-            bill__tenant=request.tenant
+            bill__tenant=self.request.tenant
         ).order_by('-generated_at')
 
 class GenerateInvoiceView(CreateAPIView):
     serializer_class = InvoiceSerializer
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -122,7 +173,7 @@ class GenerateInvoiceView(CreateAPIView):
         try:
             patient = Patient.objects.get(
                 id=patient_id,
-                tenant=request.tenant
+                tenant=self.request.tenant
             )
         except Patient.DoesNotExist:
             return Response(
@@ -130,15 +181,15 @@ class GenerateInvoiceView(CreateAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        bill, _ = PatientBill.objects.get_or_create(
-            patient=patient,
-            tenant=patient.tenant
-        )
+        bill, _ = PatientBill.objects.get_or_create(patient=patient, defaults={'tenant': patient.tenant})
+        if bill.tenant_id != request.tenant.id:
+            # A mismatched legacy bill must never become an invoice source.
+            return Response({'error': 'Patient billing record is outside this tenant.'}, status=status.HTTP_403_FORBIDDEN)
 
         total_amount = sum(item.subtotal for item in bill.items.all())
         if total_amount == 0:
             return Response(
-                {'error': 'No charges to invoice. Patient balance is zero.'},
+                {'error': "No charges found for this patient's current bill."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -156,13 +207,17 @@ class GenerateInvoiceView(CreateAPIView):
         )
 
         generate_invoice_pdf(invoice)
+        audit(actor=request.user, tenant=request.tenant, action='CREATE', request=request, instance=invoice, description=f'Generated invoice {invoice.invoice_number} for patient {patient.id}.')
         return Response(
             InvoiceSerializer(invoice).data,
             status=status.HTTP_201_CREATED
         )
 
 class DownloadInvoiceView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
 
     def get(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)
@@ -185,7 +240,10 @@ class DownloadInvoiceView(APIView):
         return response
 
 class SendInvoiceEmailView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
 
     def post(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)

@@ -21,6 +21,7 @@ class Appointment(models.Model):
     
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    room = models.CharField(max_length=100, blank=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
     notes = models.TextField(blank=True, null=True)

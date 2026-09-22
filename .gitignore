@@ -216,3 +216,31 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# RehabYangu-specific
+node_modules/
+frontend/dist/
+frontend/.vite/
+backend/media/
+backend/staticfiles/
+.vscode/
+.idea/
+.DS_Store
+
+# One-off maintenance scripts (review before committing)
+backend/add_product_id.py
+backend/update_ids.py
+
+# RehabYangu-specific
+node_modules/
+frontend/dist/
+frontend/.vite/
+backend/media/
+backend/staticfiles/
+.vscode/
+.idea/
+.DS_Store
+
+# One-off maintenance scripts (review before committing)
+backend/add_product_id.py
+backend/update_ids.py

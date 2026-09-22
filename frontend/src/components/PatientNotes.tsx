@@ -1,49 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { usePatientNotes } from '../hooks/usePatientNotes';
-import NoteForm from './NoteForm';
+import AddNoteModal from './AddNoteModal';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
+import { EmptyState } from './EmptyState';
+import { ErrorBanner } from './ErrorBanner';
+import { SkeletonCard } from './Skeleton';
+import { usePermission } from '../hooks/usePermission';
 
-interface Props {
-  patientId: number;
+const sections = [['S', 'Subjective', 'subjective'], ['O', 'Objective', 'objective'], ['A', 'Assessment', 'assessment'], ['P', 'Plan', 'plan']] as const;
+export default function PatientNotes({ patientId }: { patientId: number }) {
+  const [open, setOpen] = useState(false); const canWrite = usePermission('clinical.write') || usePermission('clinicalnote:create');
+  const notes = usePatientNotes(patientId);
+  if (notes.isLoading) return <SkeletonCard count={2} />;
+  if (notes.error) return <ErrorBanner>We could not load clinical notes. Try again shortly.</ErrorBanner>;
+  return <div className="space-y-4"><div className="flex items-center justify-between"><div><h2 className="font-semibold text-secondary-800">Clinical notes</h2><p className="text-xs text-secondary-500">Append-only SOAP documentation</p></div>{canWrite && <Button className="w-auto py-2 text-sm" onClick={() => setOpen(true)}><PlusIcon className="h-4 w-4" />Add note</Button>}</div>{!notes.data?.length ? <EmptyState title="No clinical notes" description="Document the patient’s care with a SOAP note." iconType="documents" actionLabel={canWrite ? 'Add note' : undefined} onAction={canWrite ? () => setOpen(true) : undefined} /> : <div className="space-y-3">{notes.data.map((note: any) => <article key={note.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-card"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-medium text-secondary-800">{note.author_name || note.clinician_name || 'Clinical team'}</p><p className="text-xs text-secondary-500">{new Date(note.date).toLocaleString()}</p></div><Badge tone="info">SOAP v{note.version || 1}</Badge></div><div className="mt-4 grid gap-3 lg:grid-cols-2">{sections.map(([letter, label, key]) => <section key={key} className="rounded-lg bg-secondary-50 p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-primary">{letter} — {label}</h3><p className="mt-1 whitespace-pre-wrap text-sm text-secondary-700">{note[key] || '—'}</p></section>)}</div></article>)}</div>}{open && <AddNoteModal patientId={patientId} onClose={() => setOpen(false)} />}</div>;
 }
-
-const PatientNotes: React.FC<Props> = ({ patientId }) => {
-  const [showForm, setShowForm] = useState(false);
-  const { data: notes, isLoading, error } = usePatientNotes(patientId);
-
-  if (isLoading) return <div>Loading notes...</div>;
-  if (error) return <div className="text-red-500">Error loading notes</div>;
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Clinical Notes</h3>
-        <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-          + Add Note
-        </button>
-      </div>
-      {notes?.length === 0 ? (
-        <p className="text-gray-500">No notes recorded yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {notes?.map((note: any) => (
-            <div key={note.id} className="bg-gray-50 p-4 rounded border">
-              <div className="flex justify-between text-sm text-gray-500 mb-2">
-                <span>Dr. {note.clinician_name || note.clinician}</span>
-                <span>{new Date(note.date).toLocaleString()}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><span className="font-medium">S:</span> {note.subjective}</div>
-                <div><span className="font-medium">O:</span> {note.objective}</div>
-                <div><span className="font-medium">A:</span> {note.assessment}</div>
-                <div><span className="font-medium">P:</span> {note.plan}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {showForm && <NoteForm patientId={patientId} onClose={() => setShowForm(false)} />}
-    </div>
-  );
-};
-
-export default PatientNotes;

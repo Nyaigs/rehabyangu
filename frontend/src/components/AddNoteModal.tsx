@@ -1,112 +1,18 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
-import { useToast } from '../context/ToastContext';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/Button';
+import { SelectField, TextareaField } from './ui/FormFields';
+import { ErrorBanner } from './ErrorBanner';
 
-const noteSchema = z.object({
-  subjective: z.string().min(1, 'Subjective is required'),
-  objective: z.string().min(1, 'Objective is required'),
-  assessment: z.string().min(1, 'Assessment is required'),
-  plan: z.string().min(1, 'Plan is required'),
-});
-
-type NoteFormInputs = z.infer<typeof noteSchema>;
-
-interface AddNoteModalProps {
-  patientId: number;
-  onClose: () => void;
+const schema = z.object({ patient: z.coerce.number().positive('Select a patient'), subjective: z.string().min(1, 'Subjective is required'), objective: z.string().min(1, 'Objective is required'), assessment: z.string().min(1, 'Assessment is required'), plan: z.string().min(1, 'Plan is required') });
+type Values = z.infer<typeof schema>;
+export default function AddNoteModal({ patientId, onClose }: { patientId?: number; onClose: () => void }) {
+  const client = useQueryClient(); const patients = useQuery({ queryKey: ['patients'], queryFn: async () => (await api.get('/patients/')).data, enabled: !patientId });
+  const form = useForm<Values>({ resolver: zodResolver(schema) as any, defaultValues: patientId ? { patient: patientId } : undefined });
+  const mutation = useMutation({ mutationFn: (values: Values) => api.post('/clinical-notes/', values), onSuccess: () => { client.invalidateQueries({ queryKey: ['clinical-notes'] }); client.invalidateQueries({ queryKey: ['patient-notes', patientId] }); onClose(); } });
+  return <Modal open onOpenChange={open => !open && onClose()} title="Add SOAP note"><form className="space-y-4" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>{!patientId && <SelectField label="Patient" error={form.formState.errors.patient?.message} {...form.register('patient')}><option value="">Select patient</option>{patients.data?.map((patient: any) => <option key={patient.id} value={patient.id}>{patient.first_name} {patient.last_name}</option>)}</SelectField>}<TextareaField label="S — Subjective" rows={3} placeholder="Patient's reported symptoms, concerns, and feelings" error={form.formState.errors.subjective?.message} {...form.register('subjective')} /><TextareaField label="O — Objective" rows={3} placeholder="Observed data, examination, and relevant findings" error={form.formState.errors.objective?.message} {...form.register('objective')} /><TextareaField label="A — Assessment" rows={3} placeholder="Clinical assessment and interpretation" error={form.formState.errors.assessment?.message} {...form.register('assessment')} /><TextareaField label="P — Plan" rows={3} placeholder="Care plan, referrals, and follow-up" error={form.formState.errors.plan?.message} {...form.register('plan')} />{mutation.isError && <ErrorBanner>We could not save this clinical note. Try again shortly.</ErrorBanner>}<div className="flex justify-end gap-3"><Button type="button" variant="secondary" className="w-auto" onClick={onClose}>Cancel</Button><Button className="w-auto" isLoading={mutation.isPending}>Save note</Button></div></form></Modal>;
 }
-
-const AddNoteModal: React.FC<AddNoteModalProps> = ({ patientId, onClose }) => {
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<NoteFormInputs>({
-    resolver: zodResolver(noteSchema),
-  });
-
-  const mutation = useMutation({
-    mutationFn: (data: NoteFormInputs) => api.post('/clinical-notes/', { ...data, patient: patientId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clinical-notes'] });
-      queryClient.invalidateQueries({ queryKey: ['patient-notes', patientId] });
-      toast.showToast('Note added successfully!', 'success');
-      reset();
-      onClose();
-    },
-    onError: (error: any) => {
-      toast.showToast(error.response?.data?.error || 'Failed to add note', 'error');
-    },
-  });
-
-  const onSubmit = (data: NoteFormInputs) => mutation.mutate(data);
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-start mb-4">
-          <h2 className="text-lg font-semibold text-secondary-800">Add SOAP Note</h2>
-          <button onClick={onClose} className="text-secondary-400 hover:text-secondary-600">
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div>
-              <label className="form-label">Subjective (S)</label>
-              <textarea
-                {...register('subjective')}
-                className={`input-field ${errors.subjective ? 'input-error' : ''}`}
-                rows={2}
-                placeholder="Patient's reported symptoms, feelings, concerns..."
-              />
-              {errors.subjective && <p className="text-xs text-red-600 mt-1">{errors.subjective.message}</p>}
-            </div>
-            <div>
-              <label className="form-label">Objective (O)</label>
-              <textarea
-                {...register('objective')}
-                className={`input-field ${errors.objective ? 'input-error' : ''}`}
-                rows={2}
-                placeholder="Observable data, vitals, exam findings..."
-              />
-              {errors.objective && <p className="text-xs text-red-600 mt-1">{errors.objective.message}</p>}
-            </div>
-            <div>
-              <label className="form-label">Assessment (A)</label>
-              <textarea
-                {...register('assessment')}
-                className={`input-field ${errors.assessment ? 'input-error' : ''}`}
-                rows={2}
-                placeholder="Clinical judgment, diagnosis, interpretation..."
-              />
-              {errors.assessment && <p className="text-xs text-red-600 mt-1">{errors.assessment.message}</p>}
-            </div>
-            <div>
-              <label className="form-label">Plan (P)</label>
-              <textarea
-                {...register('plan')}
-                className={`input-field ${errors.plan ? 'input-error' : ''}`}
-                rows={2}
-                placeholder="Next steps, treatments, referrals, follow-up..."
-              />
-              {errors.plan && <p className="text-xs text-red-600 mt-1">{errors.plan.message}</p>}
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary w-full justify-center"
-            >
-              {isSubmitting ? 'Saving...' : 'Save Note'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default AddNoteModal;

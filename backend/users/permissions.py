@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 
 class IsInTenant(BasePermission):
     def has_permission(self, request, view):
-        return request.tenant is not None
+        return getattr(request, 'tenant', None) is not None
 
 class IsRehabAdmin(BasePermission):
     def has_permission(self, request, view):

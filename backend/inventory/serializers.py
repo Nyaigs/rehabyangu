@@ -4,4 +4,5 @@ from .models import InventoryItem
 class InventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryItem
-        fields = ['id', 'name', 'category', 'unit_price', 'current_stock', 'reorder_level', 'expiry_date']
+        fields = ['id', 'product_id', 'name', 'category', 'cost_price', 'unit_price', 'current_stock', 'reorder_level', 'expiry_date']
+        read_only_fields = ['product_id']

@@ -3,15 +3,11 @@ from .models import PatientBill, BillItem
 from inventory.models import InventoryItem
 from patients.models import Patient
 
-def charge_patient(patient_id, item_id, quantity, administered_by):
+def charge_patient(patient_id, item_id, quantity, administered_by, tenant):
     with transaction.atomic():
-        patient = Patient.objects.select_for_update().get(id=patient_id)
-        if not patient.tenant:
-            from tenants.models import Tenant
-            patient.tenant = Tenant.objects.first()
-            patient.save()
+        patient = Patient.objects.select_for_update().get(id=patient_id, tenant=tenant)
 
-        item = InventoryItem.objects.select_for_update().get(id=item_id)
+        item = InventoryItem.objects.select_for_update().get(id=item_id, tenant=tenant)
 
         if item.category != 'SERVICE':
             if item.current_stock < quantity:
@@ -24,12 +20,12 @@ def charge_patient(patient_id, item_id, quantity, administered_by):
         bill, created = PatientBill.objects.select_for_update().get_or_create(
             patient=patient,
             defaults={
-                'tenant': patient.tenant,
+                'tenant': tenant,
                 'total_balance': 0
             }
         )
-        if not bill.tenant:
-            bill.tenant = patient.tenant
+        if bill.tenant_id != tenant.id:
+            bill.tenant = tenant
             bill.save()
 
         BillItem.objects.create(

@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     ChargePatientView,
     PatientBillView,
+    RecordPaymentView,
     InvoiceListView,
     GenerateInvoiceView,
     DownloadInvoiceView,
@@ -12,6 +13,7 @@ from .views import (
 urlpatterns = [
     path('charge/', ChargePatientView.as_view(), name='charge-patient'),
     path('patient-bill/<int:patient_id>/', PatientBillView.as_view(), name='patient-bill'),
+    path('patient-bill/<int:patient_id>/payments/', RecordPaymentView.as_view(), name='record-patient-payment'),
     path('invoices/', InvoiceListView.as_view(), name='invoice-list'),
     path('invoices/generate/', GenerateInvoiceView.as_view(), name='generate-invoice'),
     path('invoices/<int:invoice_id>/download/', DownloadInvoiceView.as_view(), name='download-invoice'),

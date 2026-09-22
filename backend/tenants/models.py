@@ -24,12 +24,21 @@ class Tenant(models.Model):
     primary_color = models.CharField(max_length=7, default="#2563EB")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Archiving retains clinical and financial history while removing a
+    # facility from normal operations. Tenants are never hard-deleted.
+    archived_at = models.DateTimeField(null=True, blank=True)
 
     # Billing & Subscription
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='trial')
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='basic')
     billing_cycle = models.CharField(max_length=20, choices=BILLING_CYCLE_CHOICES, default='monthly')
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # `plan` and `monthly_fee` are retained for legacy integrations. New
+    # platform code reads pricing and capabilities from this relationship.
+    plan_fk = models.ForeignKey(
+        'subscriptions.SubscriptionPlan', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='tenants',
+    )
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     next_billing_date = models.DateTimeField(null=True, blank=True)
     grace_period_end = models.DateTimeField(null=True, blank=True)
@@ -61,7 +70,12 @@ class TenantConfig(models.Model):
     tagline = models.CharField(max_length=200, blank=True, null=True)
     footer_text = models.CharField(max_length=200, default="RehabYangu – Powered by Weiraro Technologies")
     logo = models.ImageField(upload_to='logos/', blank=True, null=True)
+    letterhead = models.ImageField(upload_to='letterheads/', blank=True, null=True)
     favicon = models.ImageField(upload_to='favicons/', blank=True, null=True)
+    # Set only after the initial rehabilitation administrator has completed
+    # the facility setup flow.  Existing tenants remain eligible for the
+    # wizard until an administrator explicitly completes it.
+    onboarding_completed_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

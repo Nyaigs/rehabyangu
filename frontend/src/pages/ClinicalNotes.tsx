@@ -1,143 +1,16 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { PlusIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import api from '../api/client';
-import { SkeletonCard, SkeletonText } from '../components/Skeleton';
-import { EmptyState } from '../components/EmptyState';
 import AddNoteModal from '../components/AddNoteModal';
-
-const fetchClinicalNotes = async () => {
-  const { data } = await api.get('/clinical-notes/');
-  return data;
-};
-
-const fetchPatients = async () => {
-  const { data } = await api.get('/patients/');
-  return data;
-};
-
-const ClinicalNotes: React.FC = () => {
-  const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-
-  const { data: notes, isLoading: notesLoading } = useQuery({
-    queryKey: ['clinical-notes', selectedPatient],
-    queryFn: fetchClinicalNotes,
-  });
-
-  const { data: patients } = useQuery({
-    queryKey: ['patients'],
-    queryFn: fetchPatients,
-  });
-
-  const filteredNotes = selectedPatient
-    ? notes?.filter((n: any) => n.patient === selectedPatient)
-    : notes;
-
-  if (notesLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <SkeletonText width="w-32" className="mb-1" />
-            <SkeletonText width="w-48" />
-          </div>
-          <SkeletonText width="w-32" className="h-8" />
-        </div>
-        <SkeletonCard count={3} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-secondary-800">Clinical Notes</h1>
-          <p className="text-sm text-secondary-500">View and manage all SOAP notes</p>
-        </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary">
-          <PlusIcon className="w-4 h-4" />
-          Add Note
-        </button>
-      </div>
-
-      {/* Filter by patient */}
-      <div className="card p-3 flex items-center gap-2">
-        <UserIcon className="w-4 h-4 text-secondary-400" />
-        <select
-          className="input-field border-none p-0 text-sm focus:ring-0 max-w-xs"
-          value={selectedPatient || ''}
-          onChange={(e) => setSelectedPatient(e.target.value ? Number(e.target.value) : null)}
-        >
-          <option value="">All Patients</option>
-          {patients?.map((p: any) => (
-            <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
-          ))}
-        </select>
-      </div>
-
-      {!filteredNotes || filteredNotes.length === 0 ? (
-        <EmptyState
-          title="No clinical notes yet"
-          description="Start documenting patient care by adding your first SOAP note."
-          actionLabel="Add Note"
-          onAction={() => setShowAddModal(true)}
-          iconType="documents"
-        />
-      ) : (
-        <div className="space-y-4">
-          {filteredNotes.map((note: any) => (
-            <div key={note.id} className="card p-4 hover:shadow-card-hover transition-shadow">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-secondary-800">
-                      {note.patient_name || `Patient #${note.patient}`}
-                    </span>
-                    <span className="badge badge-draft text-[10px]">SOAP</span>
-                    <span className="text-xs text-secondary-400">
-                      {new Date(note.date).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-2 text-sm">
-                    <div>
-                      <span className="font-medium text-secondary-600">S:</span>
-                      <span className="text-secondary-700 ml-1">{note.subjective}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-secondary-600">O:</span>
-                      <span className="text-secondary-700 ml-1">{note.objective}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-secondary-600">A:</span>
-                      <span className="text-secondary-700 ml-1">{note.assessment}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-secondary-600">P:</span>
-                      <span className="text-secondary-700 ml-1">{note.plan}</span>
-                    </div>
-                  </div>
-                  {note.clinician_name && (
-                    <div className="text-xs text-secondary-400 mt-2">
-                      Recorded by: {note.clinician_name}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showAddModal && (
-        <AddNoteModal
-          patientId={selectedPatient || 0}
-          onClose={() => setShowAddModal(false)}
-        />
-      )}
-    </div>
-  );
-};
-
-export default ClinicalNotes;
+import { Button } from '../components/ui/Button'; import { Modal } from '../components/ui/Modal'; import { SelectField, TextareaField } from '../components/ui/FormFields'; import { Badge } from '../components/ui/Badge';
+import { EmptyState } from '../components/EmptyState'; import { ErrorBanner } from '../components/ErrorBanner'; import { SkeletonCard } from '../components/Skeleton'; import { usePermission } from '../hooks/usePermission';
+const correctionSchema = z.object({ subjective: z.string().min(1), objective: z.string().min(1), assessment: z.string().min(1), plan: z.string().min(1), correction_reason: z.string().min(3, 'Explain why this correction is needed') });
+type Correction = z.infer<typeof correctionSchema>;
+const preview = (value: string) => value?.length > 115 ? `${value.slice(0, 115)}…` : value || '—';
+function NoteModal({ note, onClose }: { note: any; onClose: () => void }) { const [correct, setCorrect] = useState(false); const qc = useQueryClient(); const form = useForm<Correction>({ resolver: zodResolver(correctionSchema), defaultValues: note }); const mutation = useMutation({ mutationFn: (v: Correction) => api.post(`/clinical-notes/${note.id}/corrections/`, v), onSuccess: () => { qc.invalidateQueries({ queryKey: ['clinical-notes'] }); onClose(); } }); return <Modal open onOpenChange={(o) => !o && onClose()} title={`SOAP note · v${note.version || 1}`}><div className="space-y-4">{!correct ? <><p className="text-sm text-secondary-500">{note.patient_name || `Patient #${note.patient}`} · {new Date(note.date).toLocaleString()} · {note.author_name || 'Clinical team'}</p>{(['subjective', 'objective', 'assessment', 'plan'] as const).map((key, i) => <section key={key} className="rounded-lg bg-slate-50 p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-primary">{['S — Subjective', 'O — Objective', 'A — Assessment', 'P — Plan'][i]}</h3><p className="mt-1 whitespace-pre-wrap text-sm text-secondary-700">{note[key]}</p></section>)}<div className="flex justify-end"><Button className="w-auto" variant="secondary" onClick={() => setCorrect(true)}>Add correction</Button></div></> : <form className="space-y-3" onSubmit={form.handleSubmit(v => mutation.mutate(v))}>{(['subjective', 'objective', 'assessment', 'plan'] as const).map(key => <TextareaField key={key} label={key[0].toUpperCase() + key.slice(1)} rows={3} error={form.formState.errors[key]?.message} {...form.register(key)} />)}<TextareaField label="Correction reason" rows={2} error={form.formState.errors.correction_reason?.message} {...form.register('correction_reason')} />{mutation.isError && <ErrorBanner>We could not record that correction. Try again.</ErrorBanner>}<div className="flex justify-end gap-3"><Button type="button" variant="secondary" className="w-auto" onClick={() => setCorrect(false)}>Back</Button><Button className="w-auto" isLoading={mutation.isPending}>Record correction</Button></div></form>}</div></Modal> }
+export default function ClinicalNotes() { const [patient, setPatient] = useState(''); const [add, setAdd] = useState(false); const [selected, setSelected] = useState<any>(null); const canCreate = usePermission('clinical.write') || usePermission('clinicalnote:create'); const notes = useQuery({ queryKey: ['clinical-notes'], queryFn: async () => (await api.get('/clinical-notes/')).data }); const patients = useQuery({ queryKey: ['patients'], queryFn: async () => { const { data } = await api.get('/patients/', { params: { page_size: 100 } }); return data.results || data; } }); const list = patient ? notes.data?.filter((n: any) => String(n.patient) === patient) : notes.data;
+return <div className="space-y-5"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-bold text-secondary-800">Clinical notes</h1><p className="text-sm text-secondary-500">Append-only SOAP documentation</p></div>{canCreate && <Button className="w-auto" onClick={() => setAdd(true)}><PlusIcon className="h-4 w-4" />Add note</Button>}</div><div className="max-w-sm rounded-xl border border-slate-200 bg-white p-3"><SelectField label="Filter by patient" value={patient} onChange={e => setPatient(e.target.value)}><option value="">All patients</option>{patients.data?.map((p: any) => <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>)}</SelectField></div>{notes.isLoading ? <SkeletonCard count={3} /> : notes.isError ? <ErrorBanner>We could not load clinical notes. Refresh the page or try again.</ErrorBanner> : !list?.length ? <EmptyState title="No clinical notes" description="Add a SOAP note to document patient care." actionLabel={canCreate ? 'Add note' : undefined} onAction={canCreate ? () => setAdd(true) : undefined} iconType="documents" /> : <div className="grid gap-4 lg:grid-cols-2">{list.map((n: any) => <article key={n.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-card"><div className="flex justify-between gap-3"><div><h2 className="font-semibold text-secondary-800">{n.patient_name || `Patient #${n.patient}`}</h2><p className="text-xs text-secondary-500">{new Date(n.date).toLocaleString()} · {n.author_name || 'Clinical team'}</p></div><Badge tone="info">SOAP v{n.version || 1}</Badge></div><div className="mt-3 grid gap-2 text-sm"><p><b className="text-primary">S</b> <span className="text-secondary-600">{preview(n.subjective)}</span></p><p><b className="text-primary">O</b> <span className="text-secondary-600">{preview(n.objective)}</span></p><p><b className="text-primary">A</b> <span className="text-secondary-600">{preview(n.assessment)}</span></p><p><b className="text-primary">P</b> <span className="text-secondary-600">{preview(n.plan)}</span></p></div><div className="mt-4 flex justify-end"><Button variant="secondary" className="w-auto py-2 text-xs" onClick={() => setSelected(n)}>View</Button></div></article>)}</div>}{add && <AddNoteModal onClose={() => setAdd(false)} />}{selected && <NoteModal note={selected} onClose={() => setSelected(null)} />}</div>; }

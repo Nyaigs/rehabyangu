@@ -1,11 +1,36 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  // Keep requests same-origin by default.  Vite proxies this path during local
+  // development, so the browser never tries to reach its own `localhost:8000`
+  // when the app is opened from another machine or a container.
+  baseURL: import.meta.env.VITE_API_URL || '/api',
 });
+
+// The API uses the tenant slug to keep every request scoped to one facility.
+// It is supplied at sign-in (or through VITE_TENANT_SLUG for a dedicated
+// deployment); there must not be a guessed tenant fallback.
+export const normalizeTenantSlug = (value?: string | null) => value?.trim().toLowerCase() || '';
+
+export const getTenantSlug = () => normalizeTenantSlug(
+  localStorage.getItem('tenant_slug') || import.meta.env.VITE_TENANT_SLUG,
+);
+
+/** Resolve Django FileField values for both Vite proxy and deployed API URLs. */
+export const resolveMediaUrl = (value?: string | null): string | undefined => {
+  if (!value) return undefined;
+  if (/^https?:\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  if (apiBase.startsWith('http')) return new URL(value, apiBase).toString();
+  return value.startsWith('/') ? value : `/${value}`;
+};
 
 api.interceptors.request.use(
   (config) => {
+    const tenantSlug = getTenantSlug();
+    if (tenantSlug) {
+      config.headers['X-Tenant'] = tenantSlug;
+    }
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

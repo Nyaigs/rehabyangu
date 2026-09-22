@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { 
   CheckCircleIcon, 
   XCircleIcon, 
@@ -24,7 +24,6 @@ const rejectRequest = async ({ id, rejection_reason }: any) => {
 };
 
 const PendingDischarges: React.FC = () => {
-  const queryClient = useQueryClient();
   const { data, isLoading, refetch } = useQuery({ queryKey: ['pending-discharges'], queryFn: fetchPending });
 
   const approveMutation = useMutation({

@@ -41,6 +41,15 @@ export const SkeletonTable: React.FC<{ rows?: number; cols?: number }> = ({ rows
   );
 };
 
+/** A table-safe loading row for data grids. */
+export const SkeletonRow: React.FC<{ columns?: number }> = ({ columns = 5 }) => (
+  <tr className="animate-pulse">
+    {Array.from({ length: columns }).map((_, index) => (
+      <td key={index} className="px-4 py-4"><div className="h-4 rounded bg-secondary-200" /></td>
+    ))}
+  </tr>
+);
+
 export const SkeletonPatientCard: React.FC<{ count?: number }> = ({ count = 3 }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -57,7 +57,10 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      # Send browser requests to Vite, which then reaches Django over the
+      # Docker network. A browser's localhost is not the backend container.
+      - VITE_API_URL=/api
+      - VITE_BACKEND_URL=http://backend:8000
 
 volumes:
   postgres_data:

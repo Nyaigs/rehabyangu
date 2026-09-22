@@ -4,8 +4,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.utils import timezone
+from django.db import models
 from .models import Subscription, PaymentRecord, Notification
 from tenants.models import Tenant
+from users.services import audit
 
 class RecordPaymentView(APIView):
     permission_classes = IsAuthenticated
@@ -40,16 +42,21 @@ class RecordPaymentView(APIView):
             paid_through_date=paid_through_date
         )
 
-        # Update subscription status to active, update next billing date
+        # Payment restores the canonical tenant lifecycle. The legacy
+        # Subscription remains synchronized for existing billing screens.
         subscription, created = Subscription.objects.get_or_create(tenant=tenant)
         subscription.status = 'active'
         subscription.next_billing_date = paid_through_date
         subscription.grace_period_end = None
         subscription.save()
 
-        # Also update tenant status
+        tenant.next_billing_date = paid_through_date
         tenant.status = 'active'
-        tenant.save()
+        tenant.is_active = True
+        tenant.grace_period_end = None
+        tenant.save(update_fields=['next_billing_date', 'status', 'is_active', 'grace_period_end'])
+        audit(actor=request.user, tenant=tenant, action='REACTIVATE', request=request,
+              description='Recorded subscription payment and restored active service.')
 
         # Send notification to tenant admin about payment received
         Notification.objects.create(
@@ -71,8 +78,10 @@ class NotificationListView(APIView):
             notifications = Notification.objects.all().order_by('-created_at')
         else:
             # Tenant admin/staff: only see their tenant's notifications
-            if hasattr(request.user, 'profile') and request.tenant:
-                notifications = Notification.objects.filter(tenant=request.tenant).order_by('-created_at')
+            if getattr(request, 'tenant_membership', None):
+                notifications = Notification.objects.filter(tenant=request.tenant).filter(
+                    models.Q(recipient__isnull=True) | models.Q(recipient=request.user)
+                ).order_by('-created_at')
             else:
                 return Response({'error': 'User not associated with a tenant'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -97,7 +106,7 @@ class MarkNotificationReadView(APIView):
 
         # Check permissions: only tenant admin or superuser can mark
         if not request.user.is_superuser:
-            if hasattr(request.user, 'profile') and request.tenant:
+            if getattr(request, 'tenant_membership', None):
                 if notification.tenant != request.tenant:
                     return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             else:

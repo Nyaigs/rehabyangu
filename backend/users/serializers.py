@@ -1,11 +1,27 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserProfile
 
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(source='profile.role', read_only=True)
-    tenant_name = serializers.CharField(source='profile.tenant.name', read_only=True)
-    is_rehab_admin = serializers.BooleanField(source='profile.is_rehab_admin', read_only=True)
+    role = serializers.SerializerMethodField()
+    tenant_name = serializers.SerializerMethodField()
+    is_rehab_admin = serializers.SerializerMethodField()
+
+    def get_membership(self, user):
+        request = self.context.get('request')
+        tenant = getattr(request, 'tenant', None) if request else None
+        return user.tenant_memberships.filter(tenant=tenant).first() if tenant else None
+
+    def get_role(self, user):
+        membership = self.get_membership(user)
+        return membership.role if membership else None
+
+    def get_tenant_name(self, user):
+        membership = self.get_membership(user)
+        return membership.tenant.name if membership else None
+
+    def get_is_rehab_admin(self, user):
+        membership = self.get_membership(user)
+        return bool(membership and membership.is_rehab_admin)
     
     class Meta:
         model = User

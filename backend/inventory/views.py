@@ -11,25 +11,23 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         action_permissions = {
-            'list': 'inventory:view',
-            'retrieve': 'inventory:view',
-            'create': 'inventory:manage',
-            'update': 'inventory:manage',
-            'partial_update': 'inventory:manage',
-            'destroy': 'inventory:manage',
+            'list': 'inventory.read',
+            'retrieve': 'inventory.read',
+            'create': 'inventory.write',
+            'update': 'inventory.write',
+            'partial_update': 'inventory.write',
+            'destroy': 'inventory.write',
         }
-        codename = action_permissions.get(self.action, 'inventory:view')
-        return [permissions.IsAuthenticated(), HasPermission(codename)]
+        codename = action_permissions.get(self.action, 'inventory.read')
+        return [permissions.IsAuthenticated(), IsInTenant(), HasPermission(codename)]
 
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser:
             return self.queryset
-        if hasattr(user, 'profile') and self.request.tenant:
+        if getattr(self.request, 'tenant_membership', None):
             return self.queryset.filter(tenant=self.request.tenant)
         return self.queryset.none()
 
     def perform_create(self, serializer):
-        user = self.request.user
-        tenant = request.tenant
-        serializer.save(tenant=tenant)
+        serializer.save(tenant=self.request.tenant)

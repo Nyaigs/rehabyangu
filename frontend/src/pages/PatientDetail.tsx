@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from '@tanstack/react-router';
+import { useParams, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ExclamationTriangleIcon,
@@ -15,8 +15,13 @@ import api from '../api/client';
 import PatientNotes from '../components/PatientNotes';
 import PatientSponsors from '../components/PatientSponsors';
 import VitalsComponent from '../components/VitalsComponent';
+import PatientPrescriptions from '../components/PatientPrescriptions';
 import { useToast } from '../context/ToastContext';
 import { SkeletonText, SkeletonCard } from '../components/Skeleton';
+import { usePermission } from '../hooks/usePermission';
+import { Table } from '../components/ui/Table';
+import { Badge } from '../components/ui/Badge';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const fetchPatient = async (id: string) => {
   const { data } = await api.get(`/patients/${id}/`);
@@ -30,14 +35,14 @@ const fetchPatientBill = async (id: number) => {
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams({ from: '/patients/$id' });
-  const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'vitals' | 'sponsors'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'vitals' | 'prescriptions' | 'sponsors'>('info');
   const [showDischargeModal, setShowDischargeModal] = useState(false);
   const [forceDischarge, setForceDischarge] = useState(false);
   const [reason, setReason] = useState('');
   const [dischargeError, setDischargeError] = useState('');
+  const canDeletePatient = usePermission('patient:delete');
 
   const { data: patient, isLoading, error } = useQuery({
     queryKey: ['patient', id],
@@ -47,6 +52,11 @@ const PatientDetail: React.FC = () => {
   const { data: bill } = useQuery({
     queryKey: ['patient-bill', id],
     queryFn: () => fetchPatientBill(Number(id)),
+    enabled: !!id,
+  });
+  const { data: admissions } = useQuery({
+    queryKey: ['admissions', id],
+    queryFn: async () => (await api.get('/admissions/', { params: { patient: id } })).data,
     enabled: !!id,
   });
 
@@ -66,6 +76,12 @@ const PatientDetail: React.FC = () => {
       setDischargeError(errMsg);
       toast.showToast(errMsg, 'error');
     },
+  });
+
+  const deletePatientMutation = useMutation({
+    mutationFn: () => api.delete(`/patients/${id}/`),
+    onSuccess: () => { toast.showToast('Patient deleted', 'success'); window.location.assign('/patients'); },
+    onError: () => toast.showToast('Unable to delete patient', 'error'),
   });
 
   const handleDischargeClick = () => {
@@ -94,7 +110,7 @@ const PatientDetail: React.FC = () => {
       </div>
     );
   }
-  if (error) return <div className="text-danger text-sm p-4">Error loading patient.</div>;
+  if (error) return <ErrorBanner>We could not load this patient record. Refresh the page or try again.</ErrorBanner>;
   if (!patient) return <div className="text-secondary-500 p-4">Patient not found.</div>;
 
   const balance = bill ? parseFloat(bill.total_balance) : 0;
@@ -106,9 +122,9 @@ const PatientDetail: React.FC = () => {
         <Link to="/patients" className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium">
           <ArrowLeftIcon className="w-4 h-4" /> Back to Patients
         </Link>
-        <button onClick={handleDischargeClick} disabled={isDischarged || requestDischargeMutation.isPending} className={`btn-danger text-sm ${isDischarged ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <div className="flex gap-2"><button onClick={handleDischargeClick} disabled={isDischarged || requestDischargeMutation.isPending} className={`btn-danger text-sm ${isDischarged ? 'opacity-50 cursor-not-allowed' : ''}`}>
           {requestDischargeMutation.isPending ? 'Submitting...' : isDischarged ? 'Discharged' : 'Request Discharge'}
-        </button>
+        </button>{canDeletePatient && <button onClick={() => { if (window.confirm('Delete this patient record? This cannot be undone.')) deletePatientMutation.mutate(); }} disabled={deletePatientMutation.isPending} className="btn-danger text-sm">{deletePatientMutation.isPending ? 'Deleting…' : 'Delete Patient'}</button>}</div>
       </div>
 
       <div className="card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -135,6 +151,7 @@ const PatientDetail: React.FC = () => {
             { key: 'info', label: 'Info', icon: UserIcon },
             { key: 'notes', label: 'Clinical Notes', icon: DocumentTextIcon },
             { key: 'vitals', label: 'Vitals', icon: HeartIcon },
+            { key: 'prescriptions', label: 'Prescriptions', icon: DocumentTextIcon },
             { key: 'sponsors', label: 'Sponsors', icon: UserGroupIcon },
           ].map((tab) => (
             <button
@@ -152,16 +169,9 @@ const PatientDetail: React.FC = () => {
 
       <div className="py-2">
         {activeTab === 'info' && (
-          <div className="card p-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-              <div><span className="font-medium text-secondary-600">Gender:</span> {patient.gender}</div>
-              <div><span className="font-medium text-secondary-600">Email:</span> {patient.email || 'N/A'}</div>
-              <div><span className="font-medium text-secondary-600">Address:</span> {patient.address || 'N/A'}</div>
-              <div><span className="font-medium text-secondary-600">Emergency Contact:</span> {patient.emergency_contact_name || 'N/A'} ({patient.emergency_contact_phone || 'N/A'})</div>
-              <div><span className="font-medium text-secondary-600">Referring Doctor:</span> {patient.referring_doctor || 'N/A'}</div>
-              <div><span className="font-medium text-secondary-600">Status:</span> <span className="capitalize">{patient.status}</span></div>
-              <div><span className="font-medium text-secondary-600">Intake Date:</span> {new Date(patient.intake_date).toLocaleDateString()}</div>
-            </div>
+          <div className="space-y-4">
+            <div className="card p-4"><h2 className="mb-3 text-sm font-semibold text-secondary-800">Demographics</h2><div className="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2"><div><span className="font-medium text-secondary-600">Patient ID:</span> {patient.patient_id || '—'}</div><div><span className="font-medium text-secondary-600">Gender:</span> {patient.gender}</div><div><span className="font-medium text-secondary-600">Email:</span> {patient.email || '—'}</div><div><span className="font-medium text-secondary-600">Address:</span> {patient.address || '—'}</div><div><span className="font-medium text-secondary-600">Emergency contact:</span> {patient.emergency_contact_name || '—'} ({patient.emergency_contact_phone || '—'})</div><div><span className="font-medium text-secondary-600">Referring clinician:</span> {patient.referring_doctor || '—'}</div><div><span className="font-medium text-secondary-600">Status:</span> <Badge tone={patient.status === 'active' ? 'success' : 'neutral'}>{patient.status}</Badge></div><div><span className="font-medium text-secondary-600">Intake date:</span> {new Date(patient.intake_date).toLocaleDateString()}</div></div></div>
+            <div className="card p-4"><h2 className="mb-3 text-sm font-semibold text-secondary-800">Admission history</h2>{admissions?.length ? <Table><thead><tr><th>Admission</th><th>Intake</th><th>Room / bed</th><th>Diagnosis</th><th>Status</th></tr></thead><tbody>{admissions.map((admission: any) => <tr key={admission.id}><td className="font-mono text-xs">{admission.admission_number}</td><td>{new Date(admission.intake_date).toLocaleDateString()}</td><td>{admission.room || '—'} {admission.bed ? `· ${admission.bed}` : ''}</td><td>{admission.primary_diagnosis || '—'}</td><td><Badge tone={admission.discharge_date ? 'neutral' : 'success'}>{admission.discharge_date ? 'discharged' : 'active'}</Badge></td></tr>)}</tbody></Table> : <p className="text-sm text-secondary-500">No admissions recorded.</p>}</div>
             {patient.notes && (
               <div className="mt-2 p-3 bg-secondary-50 rounded-lg text-sm">
                 <span className="font-medium text-secondary-600">Notes:</span>
@@ -172,6 +182,7 @@ const PatientDetail: React.FC = () => {
         )}
         {activeTab === 'notes' && <PatientNotes patientId={Number(id)} />}
         {activeTab === 'vitals' && <VitalsComponent patientId={Number(id)} />}
+        {activeTab === 'prescriptions' && <PatientPrescriptions patientId={Number(id)} />}
         {activeTab === 'sponsors' && <PatientSponsors patientId={Number(id)} />}
       </div>
 

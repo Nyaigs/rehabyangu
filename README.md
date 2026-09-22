@@ -28,9 +28,3 @@ RehabYangu is a commercial SaaS platform designed for rehabilitation centres, me
 | Containerisation | Docker Compose                              |
 
 ## Getting Started
-```bash
-git clone https://github.com/Nyaigs/rehabyangu.git
-cd rehabyangu
-docker-compose up -d
-docker-compose exec backend python manage.py migrate
-docker-compose exec backend python manage.py createsuperuser

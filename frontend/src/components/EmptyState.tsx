@@ -1,10 +1,11 @@
 import React from 'react';
 import { PlusIcon, InboxIcon } from '@heroicons/react/24/outline';
+import { Button } from './ui/Button';
 
 interface EmptyStateProps {
   title: string;
   description: string;
-  icon?: React.ReactNode;
+  icon?: React.ElementType;
   actionLabel?: string;
   onAction?: () => void;
   iconType?: 'inbox' | 'search' | 'users' | 'documents';
@@ -28,20 +29,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const Icon = icon || iconMap[iconType] || InboxIcon;
 
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-      <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-secondary-400" />
+    <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-subtle">
+        <Icon className="h-8 w-8 text-primary" />
       </div>
-      <h3 className="text-lg font-medium text-secondary-800 mb-1">{title}</h3>
-      <p className="text-sm text-secondary-500 max-w-sm">{description}</p>
+      <h3 className="mb-1 text-component-title text-ink-primary">{title}</h3>
+      <p className="max-w-sm text-secondary text-ink-secondary">{description}</p>
       {actionLabel && onAction && (
-        <button
-          onClick={onAction}
-          className="mt-4 btn-primary text-sm"
-        >
+        <Button onClick={onAction} className="mt-6 w-auto">
           <PlusIcon className="w-4 h-4" />
           {actionLabel}
-        </button>
+        </Button>
       )}
     </div>
   );
