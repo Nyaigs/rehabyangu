@@ -1,8 +1,8 @@
-# Security Handover — Benjie
+# Security Handover — Benjamin Koimett
 
 **Date:** 2026-09-23
-**From:** Project Lead
-**To:** Benjie Koimett
+**From:** Nyaigotti Nelson
+**To:** Benjamin Koimett
 
 ## Context
 
@@ -46,11 +46,10 @@ The remaining ones are open for you to complete.
 - Doppler project: `rehabyangu`
 - Your invite: check `koimettb@gmail.com` inbox
 - Run: `doppler login && doppler setup`
-- Backend: `docker-compose up -d` then `docker exec -e DB_USER=rehabyangu -e DB_PASSWORD=rehabyangu123 rehabyangu_backend python manage.py test`
 
 ## Coordination
 
 - Work on a branch: `git checkout -b security/remaining-fixes`
 - Push and open a PR when done
 - I'll review and merge
-- Ping me on WhatsApp if blocked
+- If anything is not right just inform me and advice accordingly
