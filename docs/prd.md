@@ -1,7 +1,7 @@
 # RehabYangu – Product Requirements Document (PRD)
 **Version:** 0.1  
 **Owner:** CTO / Product Owner  
-**Status:** Approved 
+**Status:** Living document — updated 2026-09-23 
 **Last Updated:** 2026-07-11  
 
 
@@ -58,9 +58,9 @@ Below is the complete feature set for RehabYangu. Features marked **MVP** are pa
 
 | Feature | Description | Multi-Tenant? | Configurable? |
 |---------|-------------|---------------|---------------|
-| User Registration | Self-registration with admin approval workflow. | Yes (per tenant) | No |
-| Login | Email + password with JWT authentication. | Yes | No |
-| Password Reset | Email-based password reset. | Yes | No |
+| User Registration | Invite-based onboarding — facility admin invites staff by email; invitee sets their own password. | Yes (per tenant) | No |
+| Login | Email or username + password with JWT authentication. | Yes | No |
+| Password Reset | Email-based password reset (planned — not yet implemented). | Yes | No |
 | MFA (Optional) | Multi-factor authentication (later phase). | Yes | Tenant can enable/disable |
 | Role-Based Access Control (RBAC) | Granular permissions per role. | Yes | **Yes** – admins can create custom roles |
 | Session Management | Auto-logout after 10 minutes inactivity (warning at 9 min). | Yes | **Yes** – configurable timeout |

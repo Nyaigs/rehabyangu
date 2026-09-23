@@ -264,3 +264,25 @@ These estimations are yet to be confirmed and analyzed
 ---
 
 **Status:** DRAFT – Ready for review by Product Owners (Brian & Nyaigotti).
+
+
+---
+
+## Appendix — Actual Pricing Model
+
+The pricing below reflects the live SubscriptionPlan model. Pricing is configurable by the platform super admin.
+
+| Plan | Monthly Price (KES) | Max Users | Included Modules |
+|---|---|---|---|
+| Starter | 5,000 | 5 | Patient records, clinical notes, vitals, appointments, basic billing |
+| Professional | 20,000 | 25 | All Starter + advanced billing, inventory, HR |
+| Enterprise | 50,000 | Unlimited | All modules + branches, analytics, MFA, priority support |
+
+### Free Trial
+Every new facility receives a 30-day free trial. After the trial ends, the subscription enters a 3-day grace period during which the facility remains operational but receives payment reminders. If no payment is received, the account is suspended (data retained).
+
+### Add-Ons (future)
+- Extra branch: +KES 10,000/month
+- SMS/WhatsApp reminders: pay-per-message
+- M-Pesa automated reconciliation: +KES 5,000/month
+- SHA claim submission: +KES 8,000/month
