@@ -16,6 +16,16 @@ export interface TenantBranding {
   letterhead_url?: string | null;
   favicon_url?: string | null;
   onboarding_completed_at?: string | null;
+  mpesa_shortcode?: string;
+  mpesa_shortcode_type?: 'paybill' | 'till';
+  mpesa_credentials_configured?: boolean;
+  kra_pin?: string;
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_number?: string;
+  bank_branch?: string;
+  invoice_terms?: string;
+  invoice_footer_text?: string;
 }
 
 interface AuthContextType {

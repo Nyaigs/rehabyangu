@@ -17,6 +17,8 @@ class PatientBillSerializer(serializers.ModelSerializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     patient_name = serializers.CharField(source='bill.patient.__str__', read_only=True)
+    patient_id = serializers.IntegerField(source='bill.patient_id', read_only=True)
+    patient_phone = serializers.CharField(source='bill.patient.phone', read_only=True)
     tenant_name = serializers.CharField(source='bill.tenant.name', read_only=True)
     class Meta:
         model = Invoice

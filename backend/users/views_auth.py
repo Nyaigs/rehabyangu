@@ -7,6 +7,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+try:  # Available in newer SimpleJWT releases; keep the configured 5.3 floor compatible.
+    from rest_framework_simplejwt.exceptions import ExpiredTokenError
+except ImportError:  # pragma: no cover - version compatibility path
+    ExpiredTokenError = TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from tenants.models import Tenant
@@ -34,8 +39,8 @@ class TenantTokenObtainPairSerializer(serializers.Serializer):
         if is_platform_admin and not user.is_superuser:
             raise PermissionDenied('The Weiraro workspace is restricted to platform administrators.')
         set_rls_context(tenant.id if tenant else None, is_platform_admin=is_platform_admin)
-        membership = None if user.is_superuser else TenantMembership.objects.filter(user=user, tenant=tenant).first()
-        if not is_platform_admin and not user.is_superuser and not membership:
+        membership = None if is_platform_admin else TenantMembership.objects.filter(user=user, tenant=tenant).first()
+        if not is_platform_admin and not membership:
             raise AuthenticationFailed('You are not a member of this facility.')
         refresh = RefreshToken.for_user(user)
         session = AuthSession.objects.create(user=user, tenant=tenant, refresh_jti=str(refresh['jti']), expires_at=timezone.now() + refresh.lifetime)
@@ -105,7 +110,7 @@ class TenantTokenRefreshView(APIView):
                 raise AuthenticationFailed('Session expired or revoked.')
             serializer = TokenRefreshSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-        except (KeyError, AuthSession.DoesNotExist, AuthenticationFailed):
+        except (KeyError, AuthSession.DoesNotExist, AuthenticationFailed, TokenError, ExpiredTokenError, InvalidToken):
             return Response({'error': {'code': 'invalid_refresh', 'message': 'Refresh token is invalid or has expired.'}}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.validated_data)
 

@@ -14,12 +14,12 @@ from .models import AuditLog, Invitation, MfaPolicy, TenantMembership
 
 
 DEFAULT_ROLE_BUNDLES = {
-    'Rehab Administrator': ['tenant.manage', 'staff.read', 'staff.invite', 'staff.manage', 'role.read', 'role.manage', 'mfa.manage_self', 'mfa.manage_policy', 'patient.read', 'patient.write', 'clinical.read', 'clinical.write', 'clinical.sensitive.read', 'clinical.sensitive.write', 'discharge.request', 'discharge.approve'],
+    'Rehab Administrator': ['tenant.manage', 'staff.read', 'staff.invite', 'staff.manage', 'role.read', 'role.manage', 'mfa.manage_self', 'mfa.manage_policy', 'patient.read', 'patient.write', 'clinical.read', 'clinical.write', 'clinical.sensitive.read', 'clinical.sensitive.write', 'discharge.request', 'discharge.approve', 'reports.read'],
     'Clinician': ['patient.read', 'patient.write', 'clinical.read', 'clinical.write', 'clinical.sensitive.read', 'clinical.sensitive.write', 'mfa.manage_self'],
-    'Psychiatrist': ['patient.read', 'patient.write', 'clinical.read', 'clinical.write', 'clinical.sensitive.read', 'clinical.sensitive.write', 'mfa.manage_self'],
-    'Nurse': ['patient.read', 'clinical.read', 'mfa.manage_self'],
-    'Reception': ['patient.read', 'patient.write', 'appointment.read', 'appointment.write', 'mfa.manage_self'],
-    'Billing': ['billing.read', 'billing.write', 'inventory.read', 'patient.read', 'mfa.manage_self'],
+    'Psychiatrist': ['patient.read', 'patient.write', 'clinical.read', 'clinical.write', 'clinical.sensitive.read', 'clinical.sensitive.write', 'vitals.read', 'vitals.write', 'appointment.read', 'mfa.manage_self'],
+    'Nurse': ['patient.read', 'clinical.read', 'vitals.read', 'vitals.write', 'appointment.read', 'mfa.manage_self'],
+    'Receptionist': ['patient.read', 'patient.write', 'appointment.read', 'appointment.write', 'mfa.manage_self'],
+    'Accountant': ['billing.read', 'billing.write', 'inventory.read', 'reports.read', 'mfa.manage_self'],
     'Staff Member': ['mfa.manage_self'],
 }
 PERMISSION_NAMES = {
@@ -28,9 +28,11 @@ PERMISSION_NAMES = {
     'role.read': ('View roles', 'role'), 'role.manage': ('Manage roles', 'role'),
     'mfa.manage_self': ('Manage own MFA', 'mfa'), 'mfa.manage_policy': ('Manage MFA policy', 'mfa'),
     'patient.read': ('View patients', 'patient'), 'patient.write': ('Manage patients', 'patient'),
+    'vitals.read': ('View vitals', 'vitals'), 'vitals.write': ('Record vitals', 'vitals'),
     'clinical.read': ('View clinical records', 'clinical'), 'clinical.write': ('Manage clinical records', 'clinical'),
     'appointment.read': ('View appointments', 'appointment'), 'appointment.write': ('Manage appointments', 'appointment'),
     'billing.read': ('View billing', 'billing'), 'billing.write': ('Manage billing', 'billing'),
+    'reports.read': ('View operational reports', 'reports'),
     'inventory.read': ('View inventory', 'inventory'), 'inventory.write': ('Manage inventory', 'inventory'),
     'clinical.sensitive.read': ('View highly sensitive clinical fields', 'clinical'),
     'clinical.sensitive.write': ('Edit highly sensitive clinical fields', 'clinical'),

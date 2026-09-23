@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/', include('medications.urls')),
     path('api/', include('billing.urls')),   # includes charge, patient-bill, invoices, etc.
     path('api/', include('subscriptions.urls')),
+    path('api/', include('reports.urls')),
     path('api/', include('authorization.urls')),
     path('api/', include('tenants.urls')),
     path('api/users/', UserListView.as_view(), name='user-list'),

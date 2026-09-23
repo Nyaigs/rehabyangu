@@ -58,26 +58,25 @@ function AuthenticatedLoginRedirect() {
   return user ? <Navigate to={isPlatformAdmin ? '/admin' : '/'} replace /> : <Suspense fallback={<AuthLoadingScreen />}><Login /></Suspense>;
 }
 
+function RootRouteComponent() {
+  const { user, isLoading, isRehabAdmin, isSuperAdmin, isPlatformAdmin, tenantBranding } = useAuth();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (pathname === '/invitations/accept') return <Suspense fallback={<AuthLoadingScreen />}><InvitationAccept /></Suspense>;
+  if (isLoading) return <AuthLoadingScreen />;
+  if (!user) return <Suspense fallback={<AuthLoadingScreen />}><Login /></Suspense>;
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return isSuperAdmin ? <Layout><Suspense fallback={<RouteLoadingScreen />}><Outlet /></Suspense></Layout> : <Navigate to="/" replace />;
+  }
+  if (isPlatformAdmin) return <Navigate to="/admin" replace />;
+  const needsOnboarding = isRehabAdmin && tenantBranding?.onboarding_completed_at === null;
+  if (pathname === '/onboarding') return needsOnboarding ? <Suspense fallback={<AuthLoadingScreen />}><Onboarding /></Suspense> : <Navigate to="/" replace />;
+  if (needsOnboarding) return <Navigate to="/onboarding" replace />;
+  return <Layout><Suspense fallback={<RouteLoadingScreen />}><Outlet /></Suspense></Layout>;
+}
+
 // Root route
 const rootRoute = createRootRoute({
-  component: () => {
-    const { user, isLoading, isRehabAdmin, isSuperAdmin, isPlatformAdmin, tenantBranding } = useAuth();
-    const pathname = useRouterState({ select: (state) => state.location.pathname });
-    if (pathname === '/invitations/accept') return <Suspense fallback={<AuthLoadingScreen />}><InvitationAccept /></Suspense>;
-    // Do not render either the previous login surface or the application shell
-    // until token restoration has completed. This removes the visual flash on
-    // refresh and during the post-login redirect.
-    if (isLoading) return <AuthLoadingScreen />;
-    if (!user) return <Suspense fallback={<AuthLoadingScreen />}><Login /></Suspense>;
-    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-      return isSuperAdmin ? <Layout><Suspense fallback={<RouteLoadingScreen />}><Outlet /></Suspense></Layout> : <Navigate to="/" replace />;
-    }
-    if (isPlatformAdmin) return <Navigate to="/admin" replace />;
-    const needsOnboarding = isRehabAdmin && tenantBranding?.onboarding_completed_at === null;
-    if (pathname === '/onboarding') return needsOnboarding ? <Suspense fallback={<AuthLoadingScreen />}><Onboarding /></Suspense> : <Navigate to="/" replace />;
-    if (needsOnboarding) return <Navigate to="/onboarding" replace />;
-    return <Layout><Suspense fallback={<RouteLoadingScreen />}><Outlet /></Suspense></Layout>;
-  },
+  component: RootRouteComponent,
   notFoundComponent: () => <div className="p-4 text-center">Page Not Found (404)</div>,
 });
 

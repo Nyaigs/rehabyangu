@@ -45,6 +45,10 @@ class TenantConfigSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField(read_only=True)
     letterhead_url = serializers.SerializerMethodField(read_only=True)
     favicon_url = serializers.SerializerMethodField(read_only=True)
+    mpesa_consumer_key = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    mpesa_consumer_secret = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    mpesa_passkey = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    mpesa_credentials_configured = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TenantConfig
@@ -54,6 +58,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             'letterhead', 'favicon', 'onboarding_completed_at',
             'logo_url', 'letterhead_url', 'favicon_url',
             'complete_onboarding',
+            'mpesa_shortcode', 'mpesa_shortcode_type', 'mpesa_consumer_key',
+            'mpesa_consumer_secret', 'mpesa_passkey', 'mpesa_account_prefix',
+            'mpesa_credentials_configured', 'kra_pin', 'vat_registered', 'vat_number',
+            'bank_name', 'bank_account_name', 'bank_account_number', 'bank_branch',
+            'invoice_prefix', 'next_invoice_number', 'invoice_terms', 'invoice_footer_text',
         ]
         read_only_fields = ['onboarding_completed_at']
         extra_kwargs = {
@@ -112,9 +121,16 @@ class TenantConfigSerializer(serializers.ModelSerializer):
     def get_logo_url(self, obj): return obj.logo.url if obj.logo else None
     def get_letterhead_url(self, obj): return obj.letterhead.url if obj.letterhead else None
     def get_favicon_url(self, obj): return obj.favicon.url if obj.favicon else None
+    def get_mpesa_credentials_configured(self, obj):
+        return bool(obj.mpesa_consumer_key and obj.mpesa_consumer_secret and obj.mpesa_passkey)
 
     def update(self, instance, validated_data):
         complete_onboarding = validated_data.pop('complete_onboarding', False)
+        for field in ('mpesa_consumer_key', 'mpesa_consumer_secret', 'mpesa_passkey'):
+            if field in validated_data:
+                value = validated_data.pop(field)
+                if value:
+                    setattr(instance, field, instance.encrypt_credential(value))
         instance = super().update(instance, validated_data)
         if complete_onboarding and instance.onboarding_completed_at is None:
             from django.utils import timezone

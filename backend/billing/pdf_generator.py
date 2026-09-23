@@ -199,6 +199,38 @@ def generate_invoice_pdf(invoice):
     ]))
     story.append(t4)
     story.append(Spacer(1, 0.5*cm))
+
+    # ===== Payment instructions =====
+    story.append(Paragraph('PAYMENT DETAILS', heading_style))
+    payment_rows = []
+    if tenant_config.mpesa_shortcode:
+        payment_rows.extend([
+            [f'M-Pesa {tenant_config.mpesa_shortcode_type.title()}:', tenant_config.mpesa_shortcode],
+            ['Account reference:', invoice.invoice_number],
+        ])
+    if tenant_config.bank_name:
+        account = ' · '.join(part for part in [tenant_config.bank_account_name, tenant_config.bank_account_number, tenant_config.bank_branch] if part)
+        payment_rows.append(['Bank:', f'{tenant_config.bank_name}{(" — " + account) if account else ""}'])
+    if tenant_config.kra_pin:
+        payment_rows.append(['KRA PIN:', tenant_config.kra_pin])
+    if payment_rows:
+        payment_table = Table(payment_rows, colWidths=[4*cm, 10*cm])
+        payment_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        story.append(payment_table)
+    else:
+        story.append(Paragraph('Contact the facility for payment instructions.', normal_style))
+    if tenant_config.invoice_terms:
+        story.append(Spacer(1, 0.2*cm))
+        story.append(Paragraph(escape(tenant_config.invoice_terms).replace('\n', '<br/>'), normal_style))
+    if tenant_config.invoice_footer_text:
+        story.append(Spacer(1, 0.2*cm))
+        story.append(Paragraph(escape(tenant_config.invoice_footer_text).replace('\n', '<br/>'), normal_style))
+    story.append(Spacer(1, 0.5*cm))
     
     # ===== Footer =====
     if tenant_config.footer_text:

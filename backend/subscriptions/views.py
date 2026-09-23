@@ -10,7 +10,7 @@ from tenants.models import Tenant
 from users.services import audit
 
 class RecordPaymentView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         if not request.user.is_superuser:
@@ -69,7 +69,7 @@ class RecordPaymentView(APIView):
         return Response({'message': 'Payment recorded and subscription updated.'}, status=status.HTTP_200_OK)
 
 class NotificationListView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated, IsInTenant]
 
     def get(self, request):
         # For tenant admins: see their tenant's notifications
@@ -96,7 +96,7 @@ class NotificationListView(APIView):
         return Response(data)
 
 class MarkNotificationReadView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated, IsInTenant]
 
     def patch(self, request, pk):
         try:

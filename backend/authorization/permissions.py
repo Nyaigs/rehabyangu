@@ -17,11 +17,30 @@ class HasPermission(BasePermission):
             return False
         if request.user.is_superuser:
             return True
-        return self.codename in get_user_permissions(request.user, getattr(request, 'tenant', None))
+        if not getattr(request, 'tenant_membership', None):
+            return False
+        return self.codename in get_user_permissions(request.user, request.tenant)
 
     def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:
             return False
         if request.user.is_superuser:
             return True
-        return self.codename in get_user_permissions(request.user, getattr(request, 'tenant', None))
+        if not getattr(request, 'tenant_membership', None):
+            return False
+        return self.codename in get_user_permissions(request.user, request.tenant)
+
+
+class HasAnyPermission(BasePermission):
+    """Tenant-scoped OR permission check for deliberately limited views."""
+    def __init__(self, *codenames):
+        self.codenames = codenames
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.user.is_superuser:
+            return True
+        if not getattr(request, 'tenant_membership', None):
+            return False
+        return bool(set(self.codenames) & get_user_permissions(request.user, request.tenant))

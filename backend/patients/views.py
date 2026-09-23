@@ -11,7 +11,7 @@ from .models import Admission, Patient, DischargeRequest, TreatmentGoal, Treatme
 from .serializers import AdmissionSerializer, PatientSerializer, TreatmentGoalSerializer, TreatmentPlanSerializer
 from billing.models import PatientBill
 from subscriptions.models import Notification
-from authorization.permissions import HasPermission
+from authorization.permissions import HasAnyPermission, HasPermission
 from users.permissions import IsInTenant
 from users.services import audit
 from users.models import TenantMembership
@@ -38,6 +38,8 @@ class PatientViewSet(viewsets.ModelViewSet):
             'update': 'patient.write',
             'partial_update': 'patient.write',
         }
+        if self.action == 'billing_search':
+            return [IsAuthenticated(), IsInTenant(), HasAnyPermission('billing.read', 'patient.read')]
         codename = action_permissions.get(self.action, 'patient.read')
         return [IsAuthenticated(), IsInTenant(), HasPermission(codename)]
 
@@ -82,6 +84,24 @@ class PatientViewSet(viewsets.ModelViewSet):
         response = super().retrieve(request, *args, **kwargs)
         audit(actor=request.user, tenant=request.tenant, action='READ', request=request, instance=self.get_object(), description=f'Read patient {kwargs["pk"]} demographics and permitted sensitive fields.')
         return response
+
+    @action(detail=False, methods=['get'], url_path='billing-search')
+    def billing_search(self, request):
+        """Minimal patient identifier lookup for billing users only."""
+        query = request.query_params.get('q', '').strip()
+        if not query:
+            return Response([])
+        words = query.split()
+        filters = (Q(first_name__icontains=query) | Q(last_name__icontains=query) |
+                   Q(patient_id__icontains=query) | Q(phone__icontains=query))
+        if len(words) > 1:
+            filters |= Q(first_name__icontains=words[0], last_name__icontains=' '.join(words[1:]))
+        rows = Patient.objects.filter(tenant=request.tenant).filter(filters).order_by('last_name', 'first_name')[:50]
+        return Response([
+            {'id': patient.id, 'first_name': patient.first_name, 'last_name': patient.last_name,
+             'patient_id': patient.patient_id, 'phone': patient.phone}
+            for patient in rows
+        ])
 
 
 class TenantScopedClinicalViewSet(viewsets.ModelViewSet):

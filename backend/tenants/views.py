@@ -193,6 +193,21 @@ class TenantConfigView(APIView):
             'letterhead_url': config.letterhead.url if config.letterhead else None,
             'favicon_url': config.favicon.url if config.favicon else None,
             'onboarding_completed_at': config.onboarding_completed_at,
+            'mpesa_shortcode': config.mpesa_shortcode,
+            'mpesa_shortcode_type': config.mpesa_shortcode_type,
+            'mpesa_account_prefix': config.mpesa_account_prefix,
+            'mpesa_credentials_configured': bool(config.mpesa_consumer_key and config.mpesa_consumer_secret and config.mpesa_passkey),
+            'kra_pin': config.kra_pin,
+            'vat_registered': config.vat_registered,
+            'vat_number': config.vat_number,
+            'bank_name': config.bank_name,
+            'bank_account_name': config.bank_account_name,
+            'bank_account_number': config.bank_account_number,
+            'bank_branch': config.bank_branch,
+            'invoice_prefix': config.invoice_prefix,
+            'next_invoice_number': config.next_invoice_number,
+            'invoice_terms': config.invoice_terms,
+            'invoice_footer_text': config.invoice_footer_text,
         }
 
     @staticmethod

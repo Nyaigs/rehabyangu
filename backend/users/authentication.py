@@ -47,13 +47,15 @@ class TenantJWTAuthentication(JWTAuthentication):
             ).exists():
                 raise AuthenticationFailed('Session expired or has been revoked.')
 
-            # Load membership
+            # Membership is re-checked for every authenticated request. This
+            # invalidates an already-issued token immediately when access is
+            # removed, rather than relying on the token expiry window.
             try:
                 request.tenant_membership = TenantMembership.objects.get(
                     user=user, tenant=tenant
                 )
             except TenantMembership.DoesNotExist:
-                request.tenant_membership = None
+                raise AuthenticationFailed('You are not a member of this facility.')
         else:
             request.tenant = None
             request.tenant_membership = None

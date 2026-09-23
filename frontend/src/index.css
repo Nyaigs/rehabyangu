@@ -1,8 +1,4 @@
 @config "../tailwind.config.js";
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
-@import '@fontsource/inter/700.css';
 @import '@fontsource/ibm-plex-sans/400.css';
 @import '@fontsource/ibm-plex-sans/500.css';
 @import '@fontsource/ibm-plex-sans/600.css';
@@ -14,7 +10,7 @@
   --tenant-secondary: #5b6b76;
   --tenant-accent: #237a57;
   --tenant-sidebar: #0f2e3d;
-  --tenant-font: 'Inter', sans-serif;
+  --tenant-font: 'IBM Plex Sans', sans-serif;
   --background: 196 16% 96%; --foreground: 194 24% 15%;
   --card: 0 0% 100%; --card-foreground: 194 24% 15%;
   --popover: 0 0% 100%; --popover-foreground: 194 24% 15%;
@@ -25,7 +21,7 @@
 @layer base {
   * { border-color: hsl(var(--border)); }
   html { -webkit-text-size-adjust: 100%; }
-  body { min-width: 320px; margin: 0; background: #f4f6f7; color: #1a2b31; font-family: var(--tenant-font), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { min-width: 320px; margin: 0; background: #f4f6f7; color: #1a2b31; font-family: var(--tenant-font), 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   button, input, select, textarea { font: inherit; }
   button:not(:disabled), [role='button']:not([aria-disabled='true']) { cursor: pointer; }
   :focus-visible { outline: 2px solid var(--tenant-primary); outline-offset: 2px; }
