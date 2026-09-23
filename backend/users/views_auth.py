@@ -83,9 +83,12 @@ class TenantTokenObtainPairView(APIView):
     def get_tenant(request):
         slug = (request.headers.get('X-Tenant') or '').strip().lower()
         if not slug:
-            host = request.get_host().split(':')[0].split('.')
-            if len(host) >= 3 and host[0] not in ('www', 'localhost', '127'):
-                slug = host[0]
+            # Hostname fallback is a development convenience only.
+            # In production, X-Tenant is required to prevent tenant enumeration.
+            if settings.DEBUG:
+                host = request.get_host().split(':')[0].split('.')
+                if len(host) >= 3 and host[0] not in ('www', 'localhost', '127'):
+                    slug = host[0]
         if slug == PLATFORM_WORKSPACE_SLUG:
             return None, True
         return (Tenant.objects.filter(subdomain=slug).first(), False) if slug else (None, False)

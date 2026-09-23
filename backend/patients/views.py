@@ -235,6 +235,26 @@ class RequestDischargeView(APIView):
         except Patient.DoesNotExist:
             return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Balance check: block discharge unless forced with a reason.
+        reason = request.data.get('reason', '')
+        is_force = bool(request.data.get('force', False))
+        try:
+            from billing.models import PatientBill
+            bill = PatientBill.objects.filter(patient=patient).first()
+        except Exception:
+            bill = None
+        balance = bill.total_balance if bill else 0
+        if balance and balance > 0 and not is_force:
+            return Response(
+                {'error': f'Patient has an outstanding balance of KES {balance}. Settle the balance or submit a forced discharge with a reason.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if is_force and not reason:
+            return Response(
+                {'error': 'Reason is required for forced discharge.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if patient.status == 'discharged':
             return Response({'error': 'Patient is already discharged'}, status=status.HTTP_400_BAD_REQUEST)
 

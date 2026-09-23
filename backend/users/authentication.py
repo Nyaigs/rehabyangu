@@ -16,8 +16,8 @@ class TenantJWTAuthentication(JWTAuthentication):
         tenant_id = token.payload.get('tenant_id')
         is_platform_admin = bool(token.payload.get('is_platform_admin'))
         if is_platform_admin:
-            if not user.is_superuser or tenant_id is not None:
-                raise AuthenticationFailed('Invalid platform administrator session.')
+            if not user.is_superuser:
+                raise AuthenticationFailed('Platform workspace is restricted to superusers.')
             set_rls_context(None, is_platform_admin=True)
             session_id = token.payload.get('session_id')
             if not session_id or not AuthSession.objects.filter(id=session_id, user=user, tenant__isnull=True, revoked_at__isnull=True, expires_at__gt=timezone.now()).exists():

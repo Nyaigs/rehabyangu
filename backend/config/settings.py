@@ -25,6 +25,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from django.core.exceptions import ImproperlyConfigured
+
+def _require_env(name):
+    value = os.environ.get(name)
+    if not value:
+        raise ImproperlyConfigured(
+            f'{name} environment variable is required. Set it in Doppler or .env.'
+        )
+    return value
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 
@@ -83,11 +93,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+_cors_default = 'http://localhost:5173,http://127.0.0.1:5173' if DEBUG else ''
 CORS_ALLOWED_ORIGINS = [
-    origin.strip() for origin in os.getenv(
-        'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,https://app.rehabyangu.com'
-    ).split(',') if origin.strip()
+    origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', _cors_default).split(',') if origin.strip()
 ]
+if not DEBUG and not CORS_ALLOWED_ORIGINS:
+    raise ImproperlyConfigured('CORS_ALLOWED_ORIGINS is required in production.')
 # The browser preflights the non-simple X-Tenant header before the login POST.
 # curl does not preflight, which is why curl can work while the React app fails.
 CORS_ALLOW_HEADERS = [*default_headers, 'x-tenant']
@@ -165,7 +176,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'rehabyangu'),
         'USER': os.environ.get('DB_USER', 'rehabyangu'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'rehabyangu123'),
+        'PASSWORD': _require_env('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
@@ -212,3 +223,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# --- Production security headers (only active when DEBUG=False) ---
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('1', 'true', 'yes')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'
