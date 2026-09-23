@@ -30,6 +30,8 @@ const Pharmacy = lazy(() => import('./pages/Pharmacy'));
 const Reports = lazy(() => import('./pages/Reports'));
 const InvitationAccept = lazy(() => import('./pages/InvitationAccept'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+const SubscriptionSettings = lazy(() => import('./pages/Settings/Subscription'));
+import { FeatureGate } from './components/FeatureGate';
 
 // Layout component
 function Layout({ children }: { children: ReactNode }) {
@@ -82,28 +84,29 @@ const rootRoute = createRootRoute({
 
 // Routes (no /new-login, no LoginPage import)
 const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: () => <Dashboard /> });
-const patientsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/patients', component: () => <Patients /> });
-const appointmentsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/appointments', component: () => <Appointments /> });
-const billingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/billing', component: () => <Billing /> });
-const patientDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: '/patients/$id', component: () => <PatientDetail /> });
+const patientsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/patients', component: () => <FeatureGate feature="patients"><Patients /></FeatureGate> });
+const appointmentsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/appointments', component: () => <FeatureGate feature="appointments"><Appointments /></FeatureGate> });
+const billingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/billing', component: () => <FeatureGate feature="billing"><Billing /></FeatureGate> });
+const patientDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: '/patients/$id', component: () => <FeatureGate feature="patients"><PatientDetail /></FeatureGate> });
 const adminTenantsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin', component: () => <Tenants /> });
 const adminPlansRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/plans', component: () => <AdminPlans /> });
 const adminTenantDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/tenants/$tenantId', component: () => <AdminTenantDetail /> });
 const staffRoute = createRoute({ getParentRoute: () => rootRoute, path: '/staff', component: () => <Staff /> });
-const vitalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/vitals', component: () => <Vitals /> });
+const vitalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/vitals', component: () => <FeatureGate feature="vitals"><Vitals /></FeatureGate> });
 const pendingDischargesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pending-discharges', component: () => <PendingDischarges /> });
 const dischargedPatientsRoute = createRoute({ getParentRoute: () => rootRoute, path:'/discharged-patients', component: () => <DischargedPatients /> });
 const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: AuthenticatedLoginRedirect });
 const invitationAcceptRoute = createRoute({ getParentRoute: () => rootRoute, path: '/invitations/accept', component: () => <InvitationAccept /> });
 const onboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/onboarding', component: () => <Onboarding /> });
-const admissionsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admissions', component: () => <Admissions /> });
-const clinicalNotesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/clinical-notes', component: () => <ClinicalNotes /> });
+const admissionsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admissions', component: () => <FeatureGate feature="patients"><Admissions /></FeatureGate> });
+const clinicalNotesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/clinical-notes', component: () => <FeatureGate feature="clinical_notes"><ClinicalNotes /></FeatureGate> });
 const medicationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/medications', component: () => <Medications /> });
 const pharmacyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pharmacy', component: () => <Pharmacy /> });
-const inventoryRoute = createRoute({ getParentRoute: () => rootRoute, path: '/inventory', component: () => <Inventory /> });
+const inventoryRoute = createRoute({ getParentRoute: () => rootRoute, path: '/inventory', component: () => <FeatureGate feature="inventory"><Inventory /></FeatureGate> });
 const sponsorsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/sponsors', component: () => <Sponsors /> });
-const reportsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/reports', component: () => <Reports /> });
+const reportsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/reports', component: () => <FeatureGate feature="analytics"><Reports /></FeatureGate> });
 const settingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings', component: () => <Settings /> });
+const subscriptionRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings/subscription', component: () => <SubscriptionSettings /> });
 const helpRoute = createRoute({ getParentRoute: () => rootRoute, path: '/help', component: () => <Help /> });
 const profileRoute = createRoute({ getParentRoute: () => rootRoute, path: '/profile', component: () => <Profile /> });
 
@@ -122,6 +125,7 @@ const routeTree = rootRoute.addChildren([
   reportsRoute,
   staffRoute,
   settingsRoute,
+  subscriptionRoute,
   helpRoute,
   patientDetailRoute,
   adminTenantsRoute,

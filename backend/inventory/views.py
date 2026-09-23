@@ -2,7 +2,8 @@ from users.permissions import IsInTenant
 from rest_framework import viewsets, permissions
 from .models import InventoryItem
 from .serializers import InventoryItemSerializer
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all()
@@ -19,7 +20,7 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
             'destroy': 'inventory.write',
         }
         codename = action_permissions.get(self.action, 'inventory.read')
-        return [permissions.IsAuthenticated(), IsInTenant(), HasPermission(codename)]
+        return [permissions.IsAuthenticated(), IsInTenant(), HasFeature('inventory'), HasPermission(codename)]
 
     def get_queryset(self):
         user = self.request.user

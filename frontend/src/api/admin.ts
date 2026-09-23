@@ -13,6 +13,7 @@ export const adminApi = {
   updateTenant: async (id: number, body: Record<string, unknown>) => (await api.patch<Tenant>(`/admin/tenants/${id}/`, body)).data,
   sendPaymentReminder: async (id: number) => (await api.post<{ message: string; sent: boolean }>(`/admin/tenants/${id}/payment-reminder/`)).data,
   plans: async () => (await api.get<Plan[]>('/admin/plans/')).data,
+  availablePlans: async () => (await api.get<Array<{ id: number; name: string; code: string; price_monthly: string; max_users: number | null; features: Record<string, boolean> }>>('/tenant-plan/available/')).data.map((plan) => ({ ...plan, description: '', feature_flags: plan.features, is_active: true })),
   createPlan: async (body: Partial<Plan>) => (await api.post<Plan>('/admin/plans/', body)).data,
   updatePlan: async (id: number, body: Partial<Plan>) => (await api.patch<Plan>(`/admin/plans/${id}/`, body)).data,
 };

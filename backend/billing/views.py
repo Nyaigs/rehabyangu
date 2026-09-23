@@ -1,5 +1,6 @@
 from users.permissions import IsInTenant
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView
 from rest_framework.response import Response
@@ -22,7 +23,7 @@ class ChargePatientView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.write')]
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -80,7 +81,7 @@ class PatientBillView(RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsInTenant]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.read')]
 
     def get_object(self):
         patient_id = self.kwargs.get('patient_id')
@@ -97,7 +98,7 @@ class RecordPaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.write')]
 
     def post(self, request, patient_id):
         patient = get_object_or_404(Patient, id=patient_id, tenant=request.tenant)
@@ -130,7 +131,7 @@ class InvoiceListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.read')]
 
     def get_queryset(self):
         patient_id = self.request.query_params.get('patient')
@@ -152,7 +153,7 @@ class GenerateInvoiceView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.write')]
 
     def post(self, request):
         patient_id = request.data.get('patient_id')
@@ -217,7 +218,7 @@ class DownloadInvoiceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.read')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.read')]
 
     def get(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)
@@ -243,7 +244,7 @@ class SendInvoiceEmailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('billing.write')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('billing'), HasPermission('billing.write')]
 
     def post(self, request, invoice_id):
         invoice = get_object_or_404(Invoice, id=invoice_id)

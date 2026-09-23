@@ -58,6 +58,7 @@ class AdminTenantCreateSerializer(serializers.Serializer):
 
 class AdminTenantUpdateSerializer(serializers.Serializer):
     subscription_plan = serializers.PrimaryKeyRelatedField(queryset=SubscriptionPlan.objects.all(), required=False)
+    acknowledge_warnings = serializers.BooleanField(required=False, default=False)
     action = serializers.ChoiceField(choices=['activate', 'suspend', 'restore', 'deactivate', 'archive'], required=False)
     next_billing_date = serializers.DateTimeField(required=False, allow_null=True)
 

@@ -14,8 +14,9 @@ from rest_framework.views import APIView
 
 from subscriptions.models import Subscription, SubscriptionPlan
 from subscriptions.serializers import SubscriptionPlanSerializer
-from subscriptions.services import current_mrr, send_payment_reminder
+from subscriptions.services import current_mrr, send_payment_reminder, compute_plan_diff
 from users.models import TenantMembership
+from inventory.models import InventoryItem
 from users.permissions import IsSuperAdmin
 from users.services import audit, create_invitation, provision_default_roles
 from .admin_serializers import AdminTenantCreateSerializer, AdminTenantSerializer, AdminTenantUpdateSerializer
@@ -120,17 +121,34 @@ class PlatformTenantDetailView(PlatformAdminView):
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
         updates = []
+        warnings = []
         if plan := values.get('subscription_plan'):
             if tenant.plan_fk_id == plan.id:
                 raise serializers.ValidationError({'subscription_plan': 'This tenant is already assigned to that plan.'})
-            previous_plan = tenant.plan_fk.name if tenant.plan_fk else tenant.plan
+            previous_plan_obj = tenant.plan_fk
+            previous_plan = previous_plan_obj.name if previous_plan_obj else tenant.plan
+            previous_monthly_fee = tenant.monthly_fee
+            diff = compute_plan_diff(previous_plan_obj, plan)
+            active_users = TenantMembership.objects.filter(tenant=tenant, user__is_active=True).count()
+            if plan.max_users is not None and active_users > plan.max_users:
+                message = f'This tenant has {active_users} active users, but {plan.name} allows {plan.max_users}. Deactivate {active_users - plan.max_users} users before downgrading.'
+                return Response({'error': message, 'current_user_count': active_users, 'target_max_users': plan.max_users, 'blocked_reason': 'user_limit_exceeded'}, status=status.HTTP_400_BAD_REQUEST)
+            removed = set(diff['features_removed'])
+            if 'inventory' in removed:
+                count = InventoryItem.objects.filter(tenant=tenant).count()
+                if count: warnings.append(f'This tenant has {count} inventory items that will become inaccessible.')
+            if 'hr' in removed:
+                count = TenantMembership.objects.filter(tenant=tenant, role='hr_manager').count()
+                if count: warnings.append(f'This tenant has {count} staff HR records that will become inaccessible.')
+            if warnings and not values.get('acknowledge_warnings', False):
+                return Response({'warnings': warnings, 'acknowledge_required': True}, status=status.HTTP_400_BAD_REQUEST)
             tenant.plan_fk = plan
             tenant.plan = {'starter': 'basic', 'professional': 'pro', 'enterprise': 'enterprise'}.get(plan.code, tenant.plan)
             tenant.monthly_fee = plan.price_monthly
             updates.extend(['plan_fk', 'plan', 'monthly_fee'])
             Subscription.objects.filter(tenant=tenant).update(plan=plan.code, amount=plan.price_monthly)
             audit(actor=request.user, tenant=tenant, action='UPDATE', request=request, instance=tenant,
-                  description=f'Changed subscription plan from {previous_plan} to {plan.name}.')
+                  description=f'Changed subscription plan from {previous_plan} to {plan.name}; old monthly fee {previous_plan_obj.price_monthly if previous_plan_obj else previous_monthly_fee}; new monthly fee {plan.price_monthly}; features added {diff["features_added"]}; features removed {diff["features_removed"]}; platform admin {request.user.username}.')
         if 'next_billing_date' in values:
             tenant.next_billing_date = values['next_billing_date']
             updates.append('next_billing_date')
@@ -159,7 +177,10 @@ class PlatformTenantDetailView(PlatformAdminView):
             audit(actor=request.user, tenant=tenant, action=audit_action, request=request, instance=tenant, description=description)
         if updates:
             tenant.save(update_fields=list(dict.fromkeys(updates)))
-        return Response(AdminTenantSerializer(tenant).data)
+        data = AdminTenantSerializer(tenant).data
+        if warnings:
+            data['warnings'] = warnings
+        return Response(data)
 
 
 class PlatformTenantPaymentReminderView(PlatformAdminView):

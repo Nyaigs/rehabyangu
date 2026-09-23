@@ -2,7 +2,8 @@ from users.permissions import IsInTenant
 from rest_framework import viewsets, permissions
 from .models import VitalSign, VitalNormalRange
 from .serializers import VitalSignSerializer, VitalNormalRangeSerializer
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 from subscriptions.models import Notification
 from users.models import TenantMembership
 
@@ -20,7 +21,7 @@ class VitalSignViewSet(viewsets.ModelViewSet):
             'destroy': 'vitals.write',
         }
         codename = action_permissions.get(self.action, 'vitals.read')
-        return [permissions.IsAuthenticated(), IsInTenant(), HasPermission(codename)]
+        return [permissions.IsAuthenticated(), IsInTenant(), HasFeature('vitals'), HasPermission(codename)]
 
     def get_queryset(self):
         user = self.request.user
@@ -44,6 +45,6 @@ class VitalSignViewSet(viewsets.ModelViewSet):
 class VitalNormalRangeViewSet(viewsets.ModelViewSet):
     serializer_class = VitalNormalRangeSerializer
     def get_permissions(self):
-        return [permissions.IsAuthenticated(), IsInTenant(), HasPermission('clinical.write' if self.action in ('create', 'update', 'partial_update') else 'clinical.read')]
+        return [permissions.IsAuthenticated(), IsInTenant(), HasFeature('vitals'), HasPermission('clinical.write' if self.action in ('create', 'update', 'partial_update') else 'clinical.read')]
     def get_queryset(self): return VitalNormalRange.objects.filter(tenant=self.request.tenant)
     def perform_create(self, serializer): serializer.save(tenant=self.request.tenant)

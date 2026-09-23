@@ -4,7 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 from users.permissions import IsInTenant
 from users.services import audit
 from .models import ClinicalNote
@@ -18,7 +19,7 @@ class ClinicalNoteViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         codename = 'clinical.write' if self.action in ('create', 'correct') else 'clinical.read'
-        return [IsAuthenticated(), IsInTenant(), HasPermission(codename)]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('clinical_notes'), HasPermission(codename)]
 
     def get_queryset(self):
         queryset = ClinicalNote.objects.filter(tenant=self.request.tenant).select_related('patient', 'admission', 'clinician', 'supersedes')

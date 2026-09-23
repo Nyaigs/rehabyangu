@@ -2,7 +2,8 @@ from users.permissions import IsInTenant
 from rest_framework import viewsets, permissions
 from .models import Appointment
 from .serializers import AppointmentSerializer
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 
 class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
@@ -19,7 +20,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             'destroy': 'appointment.write',
         }
         codename = action_permissions.get(self.action, 'appointment.read')
-        return [permissions.IsAuthenticated(), IsInTenant(), HasPermission(codename)]
+        return [permissions.IsAuthenticated(), IsInTenant(), HasFeature('appointments'), HasPermission(codename)]
 
     def get_queryset(self):
         user = self.request.user

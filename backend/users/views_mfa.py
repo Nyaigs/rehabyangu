@@ -10,7 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 from .models import MfaPolicy, TotpDevice
 from .services import audit
 
@@ -26,7 +27,7 @@ def cipher():
 
 class MfaSetupView(APIView):
     def get_permissions(self):
-        return [IsAuthenticated(), HasPermission('mfa.manage_self')]
+        return [IsAuthenticated(), HasFeature('mfa'), HasPermission('mfa.manage_self')]
 
     def post(self, request):
         secret = pyotp.random_base32()
@@ -37,7 +38,7 @@ class MfaSetupView(APIView):
 
 class MfaConfirmView(APIView):
     def get_permissions(self):
-        return [IsAuthenticated(), HasPermission('mfa.manage_self')]
+        return [IsAuthenticated(), HasFeature('mfa'), HasPermission('mfa.manage_self')]
 
     def post(self, request, pk):
         device = TotpDevice.objects.filter(id=pk, user=request.user, tenant=request.tenant, confirmed_at__isnull=True).first()
@@ -53,7 +54,7 @@ class MfaConfirmView(APIView):
 
 class MfaPolicyView(APIView):
     def get_permissions(self):
-        return [IsAuthenticated(), HasPermission('mfa.manage_policy')]
+        return [IsAuthenticated(), HasFeature('mfa'), HasPermission('mfa.manage_policy')]
 
     def get(self, request):
         policy, _ = MfaPolicy.objects.get_or_create(tenant=request.tenant)

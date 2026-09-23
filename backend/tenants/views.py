@@ -267,3 +267,29 @@ class TenantLoginBrandingView(APIView):
             'company_name': config.company_name or tenant.name,
             'logo_url': config.logo.url if config.logo else None,
         })
+
+
+class TenantPlanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from subscriptions.models import SubscriptionPlan
+        from users.models import TenantMembership
+        tenant = getattr(request, 'tenant', None)
+        if request.user.is_superuser and tenant is None:
+            plan = SubscriptionPlan.objects.filter(code='enterprise').first() or SubscriptionPlan.objects.filter(is_active=True).order_by('-price_monthly').first()
+            return Response({'plan': None if not plan else {'id': plan.id, 'name': plan.name, 'code': plan.code, 'price_monthly': str(plan.price_monthly), 'max_users': plan.max_users}, 'features': {} if not plan else plan.feature_flags, 'user_count': 0, 'max_users': None if not plan else plan.max_users, 'platform_admin': True})
+        if tenant is None:
+            from rest_framework.exceptions import NotFound
+            raise NotFound('Tenant context is required.')
+        plan = tenant.plan_fk
+        return Response({'plan': None if not plan else {'id': plan.id, 'name': plan.name, 'code': plan.code, 'price_monthly': str(plan.price_monthly), 'max_users': plan.max_users}, 'features': {} if not plan else plan.feature_flags or {}, 'user_count': TenantMembership.objects.filter(tenant=tenant, user__is_active=True).count(), 'max_users': None if not plan else plan.max_users})
+
+
+class AvailablePlansView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from subscriptions.models import SubscriptionPlan
+        plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly', 'name')
+        return Response([{'id': p.id, 'name': p.name, 'code': p.code, 'price_monthly': str(p.price_monthly), 'max_users': p.max_users, 'features': p.feature_flags or {}} for p in plans])

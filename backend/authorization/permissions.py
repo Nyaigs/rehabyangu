@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from .exceptions import FeatureNotInPlan
 from .utils import get_user_permissions
 
 
@@ -44,3 +45,18 @@ class HasAnyPermission(BasePermission):
         if not getattr(request, 'tenant_membership', None):
             return False
         return bool(set(self.codenames) & get_user_permissions(request.user, request.tenant))
+
+
+class HasFeature(BasePermission):
+    def __init__(self, feature):
+        self.feature = feature
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.user.is_superuser:
+            return True
+        tenant = getattr(request, 'tenant', None)
+        if not tenant or not tenant.plan_fk or not (tenant.plan_fk.feature_flags or {}).get(self.feature):
+            raise FeatureNotInPlan(self.feature)
+        return True

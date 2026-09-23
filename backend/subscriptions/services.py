@@ -135,3 +135,14 @@ def process_all_subscriptions(now=None):
     for tenant in Tenant.objects.filter(status__in=['trial', 'active', 'overdue']).iterator():
         changes += bool(process_tenant_subscription(tenant, now=now))
     return changes
+
+
+def compute_plan_diff(old_plan, new_plan):
+    old_features = (old_plan.feature_flags or {}) if old_plan else {}
+    new_features = (new_plan.feature_flags or {}) if new_plan else {}
+    return {
+        'features_added': sorted(key for key, enabled in new_features.items() if enabled and not old_features.get(key, False)),
+        'features_removed': sorted(key for key, enabled in old_features.items() if enabled and not new_features.get(key, False)),
+        'price_change': new_plan.price_monthly - (old_plan.price_monthly if old_plan else 0),
+        'user_limit_change': (new_plan.max_users or 0) - (old_plan.max_users or 0),
+    }

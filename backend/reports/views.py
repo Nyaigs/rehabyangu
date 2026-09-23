@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from authorization.permissions import HasPermission
+from authorization.permissions import HasPermission, HasFeature
+
 from billing.models import Invoice, Payment
 from patients.models import Admission
 from users.permissions import IsInTenant
@@ -16,7 +17,7 @@ class TenantReportView(APIView):
     permission_classes = [IsAuthenticated, IsInTenant]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('reports.read')]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('analytics'), HasPermission('reports.read')]
 
     def date_range(self, request):
         today = timezone.localdate()

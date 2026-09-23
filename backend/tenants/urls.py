@@ -9,6 +9,8 @@ from .views import (
     TenantConfigView,
     TenantLoginBrandingView,
     DashboardStatsView,
+    TenantPlanView,
+    AvailablePlansView,
 )
 from .admin_views import PlatformStatsView, PlatformTenantListCreateView, PlatformTenantDetailView, PlatformTenantPaymentReminderView, PlatformPlanListCreateView, PlatformPlanDetailView
 
@@ -25,6 +27,8 @@ urlpatterns = [
     path('tenants/<int:pk>/toggle-status/', ToggleTenantStatusView.as_view(), name='toggle-status'),
     path('tenants/<int:pk>/extend-trial/', ExtendTrialView.as_view(), name='extend-trial'),
     path('tenants/<int:pk>/staff/', TenantStaffListView.as_view(), name='tenant-staff'),
+    path('tenant-plan/', TenantPlanView.as_view(), name='tenant-plan'),
+    path('tenant-plan/available/', AvailablePlansView.as_view(), name='available-plans'),
     path('tenant-config/', TenantConfigView.as_view(), name='tenant-config'),
     path('tenant-branding/', TenantLoginBrandingView.as_view(), name='tenant-login-branding'),
     path('dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),

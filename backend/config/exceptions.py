@@ -24,6 +24,11 @@ def api_exception_handler(exc, context):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+    from authorization.exceptions import FeatureNotInPlan
+    if isinstance(exc, FeatureNotInPlan):
+        response.data = exc.detail
+        return response
+
     code = getattr(exc, 'default_code', 'api_error')
     message = 'Request could not be completed.'
     if isinstance(exc, ValidationError):

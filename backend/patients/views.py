@@ -11,7 +11,8 @@ from .models import Admission, Patient, DischargeRequest, TreatmentGoal, Treatme
 from .serializers import AdmissionSerializer, PatientSerializer, TreatmentGoalSerializer, TreatmentPlanSerializer
 from billing.models import PatientBill
 from subscriptions.models import Notification
-from authorization.permissions import HasAnyPermission, HasPermission
+from authorization.permissions import HasAnyPermission, HasPermission, HasFeature
+
 from users.permissions import IsInTenant
 from users.services import audit
 from users.models import TenantMembership
@@ -39,7 +40,7 @@ class PatientViewSet(viewsets.ModelViewSet):
             'partial_update': 'patient.write',
         }
         if self.action == 'billing_search':
-            return [IsAuthenticated(), IsInTenant(), HasAnyPermission('billing.read', 'patient.read')]
+            return [IsAuthenticated(), IsInTenant(), HasFeature('patients'), HasAnyPermission('billing.read', 'patient.read')]
         codename = action_permissions.get(self.action, 'patient.read')
         return [IsAuthenticated(), IsInTenant(), HasPermission(codename)]
 
@@ -113,7 +114,7 @@ class TenantScopedClinicalViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         codename = self.permission_write if self.action in ('create', 'update', 'partial_update') else self.permission_read
-        return [IsAuthenticated(), IsInTenant(), HasPermission(codename)]
+        return [IsAuthenticated(), IsInTenant(), HasFeature('patients'), HasPermission(codename)]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
@@ -223,7 +224,7 @@ class RequestDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('discharge.request')]
+        return [IsAuthenticated(), HasFeature('patients'), IsInTenant(), HasPermission('discharge.request')]
 
     def post(self, request, pk):
         user = request.user
@@ -296,7 +297,7 @@ class ApproveDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('discharge.approve')]
+        return [IsAuthenticated(), HasFeature('patients'), IsInTenant(), HasPermission('discharge.approve')]
 
     def post(self, request, pk):
         user = request.user
@@ -356,7 +357,7 @@ class RejectDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('discharge.approve')]
+        return [IsAuthenticated(), HasFeature('patients'), IsInTenant(), HasPermission('discharge.approve')]
 
     def post(self, request, pk):
         user = request.user
@@ -395,7 +396,7 @@ class PendingDischargesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('discharge.approve')]
+        return [IsAuthenticated(), HasFeature('patients'), IsInTenant(), HasPermission('discharge.approve')]
 
     def get(self, request):
         user = request.user
@@ -422,7 +423,7 @@ class DischargedPatientsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        return [IsAuthenticated(), IsInTenant(), HasPermission('patient.read')]
+        return [IsAuthenticated(), HasFeature('patients'), IsInTenant(), HasPermission('patient.read')]
 
     def get(self, request):
         if not request.tenant_membership:

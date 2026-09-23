@@ -36,6 +36,8 @@ interface AuthContextType {
   tenantName: string | null;
   displayRole: string;
   permissions: string[];
+  features: Record<string, boolean>;
+  hasFeature: (name: string) => boolean;
   tenantBranding: TenantBranding | null;
   login: (username: string, password: string, tenantSlug: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -49,6 +51,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [tenantBranding, setTenantBranding] = useState<TenantBranding | null>(null);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(
     () => localStorage.getItem('is_platform_admin') === 'true'
@@ -58,6 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const reset = () => {
     setUser(null);
     setPermissions([]);
+    setFeatures({});
     setTenantBranding(null);
     setIsPlatformAdmin(false);
   };
@@ -96,13 +100,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (platform) {
       setPermissions([]);
+    setFeatures({});
       setTenantBranding(null);
+      try { const plan = await api.get('/tenant-plan/'); setFeatures(plan.data.features || {}); } catch { setFeatures({}); }
       return;
     }
 
-    const [permissionsResult, brandingResult] = await Promise.allSettled([
+    const [permissionsResult, brandingResult, planResult] = await Promise.allSettled([
       api.get('/user/permissions/'),
       api.get('/tenant-config/'),
+      api.get('/tenant-plan/'),
     ]);
 
     setPermissions(
@@ -113,6 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTenantBranding(
       brandingResult.status === 'fulfilled' ? brandingResult.value.data : null
     );
+    setFeatures(planResult.status === 'fulfilled' ? planResult.value.data.features || {} : {});
   };
 
   useEffect(() => {
@@ -181,6 +189,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       ? 'RehabYangu Platform Administration'
       : tenantBranding?.company_name || user?.tenant_name || null,
     permissions,
+    features,
+    hasFeature: (name: string) => Boolean(features[name]),
     tenantBranding,
     setTenantBranding,
     login,

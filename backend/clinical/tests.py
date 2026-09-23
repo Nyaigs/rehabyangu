@@ -8,6 +8,7 @@ from rest_framework.test import APIClient
 
 from authorization.models import Permission, Role
 from patients.models import Patient
+from subscriptions.models import SubscriptionPlan
 from tenants.models import Tenant
 from users.models import AuditLog, AuthSession, TenantMembership
 from users.rls import set_rls_context
@@ -17,7 +18,21 @@ class ClinicalNoteApiTests(TestCase):
     """Regression coverage for the append-only and audit requirements."""
 
     def setUp(self):
-        self.tenant = Tenant.objects.create(name='Clinical Test', subdomain='clinical-test', status='active')
+        plan, _ = SubscriptionPlan.objects.update_or_create(
+            code='enterprise',
+            defaults={
+                'name': 'Enterprise',
+                'price_monthly': '50000.00',
+                'max_users': None,
+                'feature_flags': {
+                    'patients': True, 'clinical_notes': True, 'vitals': True,
+                    'appointments': True, 'billing': True, 'advanced_billing': True,
+                    'inventory': True, 'hr': True, 'branches': True,
+                    'analytics': True, 'mfa': True, 'priority_support': True,
+                },
+            },
+        )
+        self.tenant = Tenant.objects.create(name='Clinical Test', subdomain='clinical-test', status='active', plan_fk=plan)
         set_rls_context(self.tenant.id, is_platform_admin=True)
         self.clinician = User.objects.create_user('clinician', 'clinician@example.test', 'test-pass-12345')
         self.nurse = User.objects.create_user('nurse', 'nurse@example.test', 'test-pass-12345')
