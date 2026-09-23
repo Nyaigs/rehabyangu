@@ -43,7 +43,10 @@ class UserListView(generics.ListAPIView):
 
 class CurrentUserView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, IsInTenant]
+    # Fetching your own user record does not require a tenant context.
+    # Platform admins have no tenant by design; regular users are still
+    # authenticated and scoped by the token's tenant_id.
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
