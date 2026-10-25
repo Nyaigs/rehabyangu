@@ -14,7 +14,7 @@ RehabYangu is a commercial SaaS platform for rehabilitation centres, mental heal
 |---|---|
 | **Product** | RehabYangu |
 | **Owner** | WeiraLynk |
-| **Engineering Leads** | Project Lead & [Benjie Koimett](https://github.com/bkoimett) |
+| **Engineering Leads** | Project Lead [Benjie Koimett](https://github.com/bkoimett) |
 | **Repository** | https://github.com/Nyaigs/rehabyangu |
 | **Status** | Pre-pilot — security hardening in progress |
 
