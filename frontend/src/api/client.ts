@@ -27,9 +27,14 @@ export const resolveMediaUrl = (value?: string | null): string | undefined => {
 
 api.interceptors.request.use(
   (config) => {
-    const tenantSlug = getTenantSlug();
-    if (tenantSlug) {
-      config.headers['X-Tenant'] = tenantSlug;
+    // Only set X-Tenant if the caller didn't already provide one.
+    // Login and other explicit calls pass their own header and must
+    // not be overwritten by whatever is cached in localStorage.
+    if (!config.headers['X-Tenant']) {
+      const tenantSlug = getTenantSlug();
+      if (tenantSlug) {
+        config.headers['X-Tenant'] = tenantSlug;
+      }
     }
     const token = localStorage.getItem('access_token');
     if (token) {

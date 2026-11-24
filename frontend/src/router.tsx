@@ -28,6 +28,7 @@ const Help = lazy(() => import('./pages/Help'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Pharmacy = lazy(() => import('./pages/Pharmacy'));
 const Reports = lazy(() => import('./pages/Reports'));
+const AuditLogPage = lazy(() => import('./pages/Settings/AuditLog'));
 const InvitationAccept = lazy(() => import('./pages/InvitationAccept'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SubscriptionSettings = lazy(() => import('./pages/Settings/Subscription'));
@@ -107,6 +108,7 @@ const sponsorsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/spo
 const reportsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/reports', component: () => <FeatureGate feature="analytics"><Reports /></FeatureGate> });
 const settingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings', component: () => <Settings /> });
 const subscriptionRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings/subscription', component: () => <SubscriptionSettings /> });
+const auditLogRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings/audit-log', component: () => <AuditLogPage /> });
 const helpRoute = createRoute({ getParentRoute: () => rootRoute, path: '/help', component: () => <Help /> });
 const profileRoute = createRoute({ getParentRoute: () => rootRoute, path: '/profile', component: () => <Profile /> });
 
@@ -125,6 +127,7 @@ const routeTree = rootRoute.addChildren([
   reportsRoute,
   staffRoute,
   settingsRoute,
+  auditLogRoute,
   subscriptionRoute,
   helpRoute,
   patientDetailRoute,

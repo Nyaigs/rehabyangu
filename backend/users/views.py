@@ -14,6 +14,9 @@ from .models import AuditLog, TenantMembership
 from .services import audit, create_invitation
 from .permissions import IsInTenant
 from .serializers import AuditLogSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def can_manage_staff(request):
@@ -151,3 +154,21 @@ class TenantAuditLogView(ListAPIView):
     def get_queryset(self):
         tenant = getattr(self.request, 'tenant', None)
         return AuditLog.objects.filter(tenant=tenant).order_by('-timestamp')[:1000] if tenant else AuditLog.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Log the audit-log access itself. This creates a record that
+        # someone looked at the audit trail — critical for incident response.
+        try:
+            audit(
+                actor=request.user,
+                tenant=request.tenant,
+                action='READ',
+                request=request,
+                description='Viewed facility audit log.',
+            )
+        except Exception:
+            # Never block the audit log view if the audit write fails,
+            # but log it so we know the meta-audit trail has gaps.
+            logger.exception("Failed to write audit-log access record")
+        return response

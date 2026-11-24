@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { useAuth } from '../context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '../components/ui/Button';
 import { UsersIcon, CalendarDaysIcon, CreditCardIcon, ArrowUpIcon, ArrowRightIcon, ExclamationTriangleIcon, HeartIcon, ClipboardDocumentCheckIcon, UserPlusIcon } from '@heroicons/react/24/outline';
@@ -20,6 +21,11 @@ const trendData = [
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const firstName = (user?.first_name && user.first_name.trim()) || user?.username || 'there';
+  const today = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['dashboard-stats'], queryFn: fetchStats, refetchInterval: 30000 });
   const stats = [
     { label: 'Patients in care', value: data?.total_patients ?? 0, note: `${data?.active_patients ?? 0} active admissions`, icon: UsersIcon, tone: 'bg-blue-50 text-blue-600' },
@@ -30,7 +36,7 @@ const Dashboard: React.FC = () => {
 
   return <div className="mx-auto max-w-7xl space-y-7">
     <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div><p className="mb-1 text-sm font-medium text-[#237a67]">Tuesday, 5 August</p><h1 className="text-3xl font-bold tracking-tight text-slate-900">Good morning, {data ? 'welcome back' : 'care team'}.</h1><p className="mt-2 text-sm text-slate-500">Here’s what needs your attention at the clinic today.</p></div>
+      <div><p className="mb-1 text-sm font-medium text-[#237a67]">{today}</p><h1 className="text-3xl font-bold tracking-tight text-slate-900">{greeting}, {firstName}.</h1><p className="mt-2 text-sm text-slate-500">Here’s what needs your attention at the clinic today.</p></div>
       <div className="flex gap-2"><Button variant="secondary" onClick={() => navigate({ to: '/reports' })} className="w-auto border-slate-200 bg-white px-3.5 py-2 text-sm">View reports <ArrowRightIcon className="ml-1.5 h-3.5 w-3.5" /></Button><Button onClick={() => navigate({ to: '/admissions' })} className="w-auto bg-[#17614f] px-3.5 py-2 text-sm hover:bg-[#104c3e]"><UserPlusIcon className="mr-1.5 h-4 w-4" />New admission</Button></div>
     </section>
 
@@ -45,7 +51,7 @@ const Dashboard: React.FC = () => {
       <Card className="border-slate-200/80 bg-white shadow-[0_2px_8px_rgba(15,46,61,0.04)]"><CardContent className="p-5 sm:p-6"><div className="flex items-start justify-between"><div><h2 className="font-semibold text-slate-800">Today’s priorities</h2><p className="mt-1 text-sm text-slate-500">Items requiring review</p></div><span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-50 text-amber-600"><ExclamationTriangleIcon className="h-5 w-5" /></span></div><div className="mt-5 space-y-1"><Priority onClick={() => navigate({ to: '/clinical-notes' })} tone="amber" title="3 medication reviews due" detail="Clinical review required today" /><Priority onClick={() => navigate({ to: '/pending-discharges' })} tone="rose" title="2 pending discharges" detail="Awaiting final sign-off" /><Priority onClick={() => navigate({ to: '/appointments' })} tone="blue" title="5 upcoming appointments" detail="First appointment at 09:30" /></div><button onClick={() => navigate({ to: '/appointments' })} className="mt-5 flex w-full items-center justify-center gap-1 rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Open task centre <ArrowRightIcon className="h-3.5 w-3.5" /></button></CardContent></Card>
     </section>
 
-    <section className="grid grid-cols-1 gap-5 lg:grid-cols-2"><Card className="border-slate-200/80 bg-white shadow-[0_2px_8px_rgba(15,46,61,0.04)]"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold text-slate-800">Upcoming reviews</h2><p className="mt-1 text-sm text-slate-500">Patients scheduled for clinical follow-up</p></div><ClipboardDocumentCheckIcon className="h-5 w-5 text-[#237a67]" /></div><div className="divide-y divide-slate-100"><Review initials="AM" name="Amina Mwangi" type="Clinical review" time="09:30" /><Review initials="JO" name="John Otieno" type="Treatment plan review" time="11:00" /><Review initials="NK" name="Naomi Kilonzo" type="Counselling session" time="14:30" /></div></CardContent></Card><Card className="border-slate-200/80 bg-[#173f52] text-white shadow-[0_2px_8px_rgba(15,46,61,0.08)]"><CardContent className="flex h-full flex-col justify-between p-6"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">Care at a glance</p><h2 className="mt-3 text-xl font-semibold tracking-tight">Every record, one calm workspace.</h2><p className="mt-2 max-w-md text-sm leading-6 text-slate-300">Keep patients, care plans, and clinic operations coordinated throughout the day.</p></div><div className="mt-7 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10"><HeartIcon className="h-5 w-5 text-emerald-300" /></div><p className="text-xs text-slate-300">Data updates automatically every 30 seconds.</p></div></CardContent></Card></section>
+    <section className="grid grid-cols-1 gap-5 lg:grid-cols-2"><Card className="border-slate-200/80 bg-white shadow-[0_2px_8px_rgba(15,46,61,0.04)]"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold text-slate-800">Upcoming reviews</h2><p className="mt-1 text-sm text-slate-500">Patients scheduled for clinical follow-up</p></div><ClipboardDocumentCheckIcon className="h-5 w-5 text-[#237a67]" /></div><div className="divide-y divide-slate-100"><Review initials="AM" name="Amina Mwangi" type="Clinical review" time="09:30" /><Review initials="JO" name="John Otieno" type="Treatment plan review" time="11:00" /><Review initials="NK" name="Naomi Kilonzo" type="Counselling session" time="14:30" /></div></CardContent></Card><Card className="border-slate-200/80 bg-[#173f52] text-white shadow-[0_2px_8px_rgba(15,46,61,0.08)]"><CardContent className="flex h-full flex-col justify-between p-6"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">Care at a glance</p><h2 className="mt-3 text-xl font-semibold tracking-tight">Every record, one calm workspace.</h2><p className="mt-2 max-w-md text-sm leading-6 text-slate-300">Keep patients, care plans, and clinic operations coordinated throughout the day.</p></div><div className="mt-7 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10"><HeartIcon className="h-5 w-5 text-emerald-300" /></div><p className="text-xs text-slate-300">Live</p></div></CardContent></Card></section>
   </div>;
 };
 
