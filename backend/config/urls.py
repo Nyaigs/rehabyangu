@@ -35,14 +35,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
-router.register(r'patients', PatientViewSet)
+router.register(r'patients', PatientViewSet, basename='patient')
 router.register(r'admissions', AdmissionViewSet, basename='admission')
 router.register(r'treatment-plans', TreatmentPlanViewSet, basename='treatment-plan')
 router.register(r'treatment-goals', TreatmentGoalViewSet, basename='treatment-goal')
-router.register(r'sponsors', SponsorViewSet)
-router.register(r'appointments', AppointmentViewSet)
+router.register(r'sponsors', SponsorViewSet, basename='sponsor')
+router.register(r'appointments', AppointmentViewSet, basename='appointment')
 router.register(r'clinical-notes', ClinicalNoteViewSet, basename='clinical-note')
-router.register(r'inventory', InventoryItemViewSet)
+router.register(r'inventory', InventoryItemViewSet, basename='inventory-item')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
