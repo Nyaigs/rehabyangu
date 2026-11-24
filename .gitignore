@@ -244,3 +244,4 @@ backend/staticfiles/
 # One-off maintenance scripts (review before committing)
 backend/add_product_id.py
 backend/update_ids.py
+*.bak
