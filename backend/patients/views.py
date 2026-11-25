@@ -24,7 +24,6 @@ class PatientPagination(PageNumberPagination):
 
 
 class PatientViewSet(viewsets.ModelViewSet):
-    queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     permission_classes = [IsAuthenticated, IsInTenant]
     pagination_class = PatientPagination
@@ -45,7 +44,7 @@ class PatientViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(), IsInTenant(), HasPermission(codename)]
 
     def get_queryset(self):
-        queryset = self.queryset.filter(tenant=self.request.tenant)
+        queryset = Patient.objects.filter(tenant=self.request.tenant)
         search = self.request.query_params.get('search', '').strip()
         workflow = self.request.query_params.get('filter', '').strip()
         if search:

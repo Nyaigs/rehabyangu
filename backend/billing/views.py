@@ -76,7 +76,6 @@ class ChargePatientView(APIView):
             )
 
 class PatientBillView(RetrieveAPIView):
-    queryset = PatientBill.objects.all()
     serializer_class = PatientBillSerializer
     permission_classes = [IsAuthenticated, IsInTenant]
 

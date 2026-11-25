@@ -6,7 +6,6 @@ from authorization.permissions import HasPermission, HasFeature
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
-    queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = permissions.IsAuthenticated
 
@@ -25,10 +24,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser:
-            return self.queryset
+            return Appointment.objects.all()
         if getattr(self.request, 'tenant_membership', None):
-            return self.queryset.filter(tenant=self.request.tenant)
-        return self.queryset.none()
+            return Appointment.objects.all().filter(tenant=self.request.tenant)
+        return Appointment.objects.all().none()
 
     def perform_create(self, serializer):
         serializer.save(tenant=self.request.tenant)
