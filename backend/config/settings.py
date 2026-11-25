@@ -142,7 +142,7 @@ SIMPLE_JWT = {
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@rehabyangu.local')
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-MFA_ENCRYPTION_KEY = os.getenv('MFA_ENCRYPTION_KEY', '')
+MFA_ENCRYPTION_KEY = _require_env('MFA_ENCRYPTION_KEY')
 # 32-byte URL-safe base64 Fernet key used for tenant payment credentials.
 # Generate with: Fernet.generate_key().decode().  A derived SECRET_KEY key is
 # used only for backwards-compatible local development when this is absent.
