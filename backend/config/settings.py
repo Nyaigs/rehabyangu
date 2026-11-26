@@ -146,7 +146,7 @@ MFA_ENCRYPTION_KEY = _require_env('MFA_ENCRYPTION_KEY')
 # 32-byte URL-safe base64 Fernet key used for tenant payment credentials.
 # Generate with: Fernet.generate_key().decode().  A derived SECRET_KEY key is
 # used only for backwards-compatible local development when this is absent.
-FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', '')
+FIELD_ENCRYPTION_KEY = _require_env('FIELD_ENCRYPTION_KEY')
 
 ROOT_URLCONF = 'config.urls'
 

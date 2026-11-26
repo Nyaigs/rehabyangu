@@ -8,12 +8,8 @@ from hashlib import sha256
 
 def _credential_cipher():
     """Use an explicit deployment key when supplied, with a safe key shape."""
-    key = getattr(settings, 'FIELD_ENCRYPTION_KEY', '')
-    if key:
-        return Fernet(key.encode() if isinstance(key, str) else key)
-    # SECRET_KEY is already protected deployment secret; deriving a Fernet key
-    # keeps existing installations usable until FIELD_ENCRYPTION_KEY is set.
-    return Fernet(urlsafe_b64encode(sha256(settings.SECRET_KEY.encode()).digest()))
+    key = settings.FIELD_ENCRYPTION_KEY
+    return Fernet(key.encode() if isinstance(key, str) else key)
 
 class Tenant(models.Model):
     STATUS_CHOICES = [
