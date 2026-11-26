@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
+from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -169,15 +170,35 @@ class AdmissionViewSet(TenantScopedClinicalViewSet):
         reason = str(request.data.get('reason', '')).strip()
         if not reason:
             return Response({'reason': 'A discharge reason is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        admission.discharge_date = timezone.now()
-        admission.status = 'discharged'
-        admission.refresh_stay_length()
-        admission.save(update_fields=['discharge_date', 'status', 'length_of_stay_days', 'updated_at'])
-        patient = admission.patient
-        patient.status, patient.discharged_at = 'discharged', admission.discharge_date
-        patient.notes = f"{patient.notes or ''}\n--- Admission discharge ---\nReason: {reason}\n"
-        patient.save(update_fields=['status', 'discharged_at', 'notes', 'updated_at'])
-        audit(actor=request.user, tenant=request.tenant, action='UPDATE', request=request, instance=admission, description=f'Discharged admission {admission.admission_number}: {reason}')
+        with transaction.atomic():
+            # Re-fetch with a row lock so two concurrent discharges cannot both
+            # pass the "already discharged?" check above.
+            admission = Admission.objects.select_for_update().get(pk=admission.pk)
+            if admission.discharge_date:
+                return Response({'detail': 'This admission is already discharged.'}, status=status.HTTP_400_BAD_REQUEST)
+            # Lock the bill and gate on outstanding balance. Force-discharge
+            # with a balance must go through RequestDischargeView ->
+            # ApproveDischargeView so the admin approval is audited.
+            bill = (
+                PatientBill.objects.select_for_update()
+                .filter(patient=admission.patient)
+                .first()
+            )
+            balance = bill.total_balance if bill else 0
+            if balance and balance > 0:
+                return Response(
+                    {'detail': f'Patient has an outstanding balance of KES {balance}. Submit a discharge request for admin approval.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            admission.discharge_date = timezone.now()
+            admission.status = 'discharged'
+            admission.refresh_stay_length()
+            admission.save(update_fields=['discharge_date', 'status', 'length_of_stay_days', 'updated_at'])
+            patient = admission.patient
+            patient.status, patient.discharged_at = 'discharged', admission.discharge_date
+            patient.notes = f"{patient.notes or ''}\n--- Admission discharge ---\nReason: {reason}\n"
+            patient.save(update_fields=['status', 'discharged_at', 'notes', 'updated_at'])
+            audit(actor=request.user, tenant=request.tenant, action='UPDATE', request=request, instance=admission, description=f'Discharged admission {admission.admission_number}: {reason}')
         return Response(self.get_serializer(admission).data)
 
 
@@ -235,56 +256,52 @@ class RequestDischargeView(APIView):
         except Patient.DoesNotExist:
             return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Balance check: block discharge unless forced with a reason.
+        # Balance check: early-warning gate. The authoritative check runs at
+        # approval time under a row lock in ApproveDischargeView.
         reason = request.data.get('reason', '')
         is_force = bool(request.data.get('force', False))
-        try:
-            from billing.models import PatientBill
-            bill = PatientBill.objects.filter(patient=patient).first()
-        except Exception:
-            bill = None
-        balance = bill.total_balance if bill else 0
-        if balance and balance > 0 and not is_force:
-            return Response(
-                {'error': f'Patient has an outstanding balance of KES {balance}. Settle the balance or submit a forced discharge with a reason.'},
-                status=status.HTTP_400_BAD_REQUEST
+        with transaction.atomic():
+            bill = (
+                PatientBill.objects.select_for_update()
+                .filter(patient=patient)
+                .first()
             )
-        if is_force and not reason:
-            return Response(
-                {'error': 'Reason is required for forced discharge.'},
-                status=status.HTTP_400_BAD_REQUEST
+            balance = bill.total_balance if bill else 0
+            if balance and balance > 0 and not is_force:
+                return Response(
+                    {'error': f'Patient has an outstanding balance of KES {balance}. Settle the balance or submit a forced discharge with a reason.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if is_force and not reason:
+                return Response(
+                    {'error': 'Reason is required for forced discharge.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if patient.status == 'discharged':
+                return Response({'error': 'Patient is already discharged'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if DischargeRequest.objects.filter(patient=patient, status='pending').exists():
+                return Response({'error': 'A discharge request is already pending approval'}, status=status.HTTP_400_BAD_REQUEST)
+
+            discharge_request = DischargeRequest.objects.create(
+                patient=patient,
+                requested_by=user,
+                reason=reason,
+                is_force=is_force,
+                status='pending'
             )
+            audit(actor=user, tenant=request.tenant, action='CREATE', request=request, instance=discharge_request, description=f'Created discharge request {discharge_request.id} for patient {patient.id}.')
 
-        if patient.status == 'discharged':
-            return Response({'error': 'Patient is already discharged'}, status=status.HTTP_400_BAD_REQUEST)
-
-        reason = request.data.get('reason', '')
-        is_force = request.data.get('force', False)
-
-        if is_force and not reason:
-            return Response({'error': 'Reason is required for force discharge'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if DischargeRequest.objects.filter(patient=patient, status='pending').exists():
-            return Response({'error': 'A discharge request is already pending approval'}, status=status.HTTP_400_BAD_REQUEST)
-
-        discharge_request = DischargeRequest.objects.create(
-            patient=patient,
-            requested_by=user,
-            reason=reason,
-            is_force=is_force,
-            status='pending'
-        )
-        audit(actor=user, tenant=request.tenant, action='CREATE', request=request, instance=discharge_request, description=f'Created discharge request {discharge_request.id} for patient {patient.id}.')
-
-        admin_profiles = TenantMembership.objects.filter(tenant=request.tenant, is_rehab_admin=True)
-        for membership in admin_profiles:
-            Notification.objects.create(
-                tenant=patient.tenant,
-                recipient=membership.user,
-                notification_type='other',
-                title='New Discharge Request',
-                message=f'{user.username} requested discharge for {patient.first_name} {patient.last_name}.'
-            )
+            admin_profiles = TenantMembership.objects.filter(tenant=request.tenant, is_rehab_admin=True)
+            for membership in admin_profiles:
+                Notification.objects.create(
+                    tenant=patient.tenant,
+                    recipient=membership.user,
+                    notification_type='other',
+                    title='New Discharge Request',
+                    message=f'{user.username} requested discharge for {patient.first_name} {patient.last_name}.'
+                )
 
         return Response({
             'message': 'Discharge request submitted for approval',
@@ -320,35 +337,56 @@ class ApproveDischargeView(APIView):
         if not user.check_password(password):
             return Response({'error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        patient = discharge_request.patient
-        patient.status = 'discharged'
-        patient.discharged_at = timezone.now()
-        patient.save()
-        audit(actor=user, tenant=request.tenant, action='UPDATE', request=request, instance=patient, description=f'Discharged patient {patient.id}.')
+        with transaction.atomic():
+            # Re-fetch the request under lock to prevent double-approval.
+            discharge_request = DischargeRequest.objects.select_for_update().get(pk=discharge_request.pk)
+            if discharge_request.status != 'pending':
+                return Response({'error': 'This request is already processed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        discharge_request.status = 'approved'
-        discharge_request.approved_by = user
-        discharge_request.approved_at = timezone.now()
-        discharge_request.approval_reason = approval_reason
-        discharge_request.save()
-        audit(actor=user, tenant=request.tenant, action='UPDATE', request=request, instance=discharge_request, description=f'Approved discharge request {discharge_request.id}.')
+            patient = discharge_request.patient
+            # Lock the bill and re-check the balance — this is the authoritative
+            # gate. A concurrent payment on the same patient will block on this
+            # same row lock until we commit.
+            bill = (
+                PatientBill.objects.select_for_update()
+                .filter(patient=patient)
+                .first()
+            )
+            balance = bill.total_balance if bill else 0
+            if balance and balance > 0 and not discharge_request.is_force:
+                return Response(
+                    {'error': f'Patient has an outstanding balance of KES {balance}. Cannot approve discharge without force.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        log_entry = f"\n--- Discharge Approved ---\n"
-        log_entry += f"Requested by: {discharge_request.requested_by.username} at {discharge_request.requested_at}\n"
-        log_entry += f"Reason: {discharge_request.reason}\n"
-        log_entry += f"Force: {discharge_request.is_force}\n"
-        log_entry += f"Approved by: {user.username} at {timezone.now()}\n"
-        log_entry += f"Approval reason: {approval_reason}\n"
-        patient.notes = (patient.notes or "") + log_entry
-        patient.save()
+            patient.status = 'discharged'
+            patient.discharged_at = timezone.now()
+            patient.save()
+            audit(actor=user, tenant=request.tenant, action='UPDATE', request=request, instance=patient, description=f'Discharged patient {patient.id}.')
 
-        Notification.objects.create(
-            tenant=patient.tenant,
-            recipient=discharge_request.requested_by,
-            notification_type='other',
-            title='Discharge Approved',
-            message=f'Your discharge request for {patient.first_name} {patient.last_name} has been approved.',
-        )
+            discharge_request.status = 'approved'
+            discharge_request.approved_by = user
+            discharge_request.approved_at = timezone.now()
+            discharge_request.approval_reason = approval_reason
+            discharge_request.save()
+            audit(actor=user, tenant=request.tenant, action='UPDATE', request=request, instance=discharge_request, description=f'Approved discharge request {discharge_request.id}.')
+
+            log_entry = f"\n--- Discharge Approved ---\n"
+            log_entry += f"Requested by: {discharge_request.requested_by.username} at {discharge_request.requested_at}\n"
+            log_entry += f"Reason: {discharge_request.reason}\n"
+            log_entry += f"Force: {discharge_request.is_force}\n"
+            log_entry += f"Approved by: {user.username} at {timezone.now()}\n"
+            log_entry += f"Approval reason: {approval_reason}\n"
+            patient.notes = (patient.notes or "") + log_entry
+            patient.save()
+
+            Notification.objects.create(
+                tenant=patient.tenant,
+                recipient=discharge_request.requested_by,
+                notification_type='other',
+                title='Discharge Approved',
+                message=f'Your discharge request for {patient.first_name} {patient.last_name} has been approved.',
+            )
 
         return Response({'message': 'Discharge approved successfully', 'patient_status': 'discharged'})
 
