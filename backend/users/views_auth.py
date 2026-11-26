@@ -96,6 +96,7 @@ class TenantTokenObtainPairView(APIView):
 
 class TenantTokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = 'refresh'
     authentication_classes = []
 
     def post(self, request):

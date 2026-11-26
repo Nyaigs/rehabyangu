@@ -127,6 +127,7 @@ REST_FRAMEWORK = {
         'user': '60/minute',
         'login': '10/minute',
         'invitation_accept': '5/minute',
+        'refresh': '30/minute',
     },
 }
 
