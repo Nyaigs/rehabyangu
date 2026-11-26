@@ -111,6 +111,12 @@ class TenantTokenRefreshView(APIView):
                 session = AuthSession.objects.get(id=refresh['session_id'], user_id=refresh['user_id'], tenant_id=tenant_id)
             if not session.is_active:
                 raise AuthenticationFailed('Session expired or revoked.')
+            # Re-verify tenant membership so a revoked staff member cannot keep
+            # minting new access tokens after removal from the facility.
+            if not is_platform_admin and not TenantMembership.objects.filter(
+                user_id=refresh['user_id'], tenant_id=tenant_id
+            ).exists():
+                raise AuthenticationFailed('You are not a member of this facility.')
             serializer = TokenRefreshSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
         except (KeyError, AuthSession.DoesNotExist, AuthenticationFailed, TokenError, ExpiredTokenError, InvalidToken):
