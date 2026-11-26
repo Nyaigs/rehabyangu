@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.http import HttpResponse, Http404  # Http404 added
+from django.db import transaction
 from .services import charge_patient
 from .models import PatientBill, Invoice
 from .serializers import PatientBillSerializer, InvoiceSerializer, PaymentSerializer
@@ -101,28 +102,34 @@ class RecordPaymentView(APIView):
 
     def post(self, request, patient_id):
         patient = get_object_or_404(Patient, id=patient_id, tenant=request.tenant)
-        bill, _ = PatientBill.objects.get_or_create(patient=patient, defaults={'tenant': request.tenant})
         serializer = PaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         amount = serializer.validated_data['amount']
         if amount <= 0:
             return Response({'amount': 'Amount must be greater than zero.'}, status=status.HTTP_400_BAD_REQUEST)
-        if amount > bill.total_balance:
-            return Response({'amount': 'Payment cannot exceed the outstanding balance.'}, status=status.HTTP_400_BAD_REQUEST)
-        payment = serializer.save(bill=bill)
-        bill.total_balance -= amount
-        bill.save(update_fields=['total_balance', 'updated_at'])
-        remaining = amount
-        for invoice in bill.invoices.exclude(status='paid').order_by('generated_at'):
-            applied = min(invoice.total_amount - invoice.amount_paid, remaining)
-            invoice.amount_paid += applied
-            remaining -= applied
-            if invoice.amount_paid >= invoice.total_amount:
-                invoice.status = 'paid'
-            invoice.save(update_fields=['amount_paid', 'status'])
-            if remaining <= 0:
-                break
-        audit(actor=request.user, tenant=request.tenant, action='CREATE', request=request, instance=payment, description=f'Recorded payment for patient {patient.id}.')
+        with transaction.atomic():
+            # Ensure the bill exists, then lock it so concurrent payments on
+            # the same patient serialize (no lost update) and a concurrent
+            # discharge on the same patient (which locks the same row) cannot
+            # slip between check and commit.
+            PatientBill.objects.get_or_create(patient=patient, defaults={'tenant': request.tenant})
+            bill = PatientBill.objects.select_for_update().get(patient=patient)
+            if amount > bill.total_balance:
+                return Response({'amount': 'Payment cannot exceed the outstanding balance.'}, status=status.HTTP_400_BAD_REQUEST)
+            payment = serializer.save(bill=bill)
+            bill.total_balance -= amount
+            bill.save(update_fields=['total_balance', 'updated_at'])
+            remaining = amount
+            for invoice in bill.invoices.exclude(status='paid').order_by('generated_at'):
+                applied = min(invoice.total_amount - invoice.amount_paid, remaining)
+                invoice.amount_paid += applied
+                remaining -= applied
+                if invoice.amount_paid >= invoice.total_amount:
+                    invoice.status = 'paid'
+                invoice.save(update_fields=['amount_paid', 'status'])
+                if remaining <= 0:
+                    break
+            audit(actor=request.user, tenant=request.tenant, action='CREATE', request=request, instance=payment, description=f'Recorded payment for patient {patient.id}.')
         return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
 
 class InvoiceListView(ListAPIView):
