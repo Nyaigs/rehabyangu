@@ -25,6 +25,27 @@ class PrescriptionSerializer(serializers.ModelSerializer):
             value = attrs.get(field) or getattr(self.instance, field, None)
             if value and value.tenant_id != tenant.id:
                 raise serializers.ValidationError({field: 'Must belong to this tenant.'})
+
+        # A4-2: reject fractional doses for whole-unit forms (tablets, capsules).
+        # Only validated when dose is a bare number. Doses like "500mg" represent
+        # tablet strength (see Medication.strength), not unit count — outside scope.
+        medication = attrs.get('medication') or getattr(self.instance, 'medication', None)
+        dose = attrs.get('dose') or getattr(self.instance, 'dose', None)
+        if medication and dose:
+            form = (medication.form or '').strip().lower()
+            if form in ('tablet', 'tablets', 'capsule', 'capsules'):
+                try:
+                    value = float(dose.strip())
+                except (ValueError, TypeError):
+                    pass  # non-numeric dose (units appended) — skip
+                else:
+                    if value <= 0:
+                        raise serializers.ValidationError({'dose': 'Dose must be greater than zero.'})
+                    if value != int(value):
+                        raise serializers.ValidationError({
+                            'dose': f'Dose for {form} must be a whole number (e.g., "2", not "2.5").'
+                        })
+
         return attrs
 
 
