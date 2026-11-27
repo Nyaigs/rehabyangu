@@ -1,0 +1,4785 @@
+openapi: 3.0.3
+info:
+  title: RehabYangu API
+  version: 1.0.0
+  description: Multi-tenant rehabilitation & mental-health management API.
+paths:
+  /api/admin/plans/:
+    get:
+      operationId: admin_plans_retrieve
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: admin_plans_create
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/plans/{id}/:
+    patch:
+      operationId: admin_plans_partial_update
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/stats/:
+    get:
+      operationId: admin_stats_retrieve
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/tenants/:
+    get:
+      operationId: admin_tenants_retrieve
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: admin_tenants_create
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/tenants/{id}/:
+    get:
+      operationId: admin_tenants_retrieve_2
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: admin_tenants_partial_update
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/tenants/{id}/payment-reminder/:
+    post:
+      operationId: admin_tenants_payment_reminder_create
+      description: 'Explicitly global boundary: membership permissions are never enough.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admissions/:
+    get:
+      operationId: admissions_list
+      tags:
+      - admissions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Admission'
+          description: ''
+    post:
+      operationId: admissions_create
+      tags:
+      - admissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+  /api/admissions/{id}/:
+    get:
+      operationId: admissions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admissions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+    put:
+      operationId: admissions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+    patch:
+      operationId: admissions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdmissionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdmissionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdmissionRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+  /api/admissions/{id}/discharge/:
+    post:
+      operationId: admissions_discharge_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdmissionRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+  /api/admissions/bed-availability/:
+    get:
+      operationId: admissions_bed_availability_retrieve
+      tags:
+      - admissions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admission'
+          description: ''
+  /api/appointments/:
+    get:
+      operationId: appointments_list
+      tags:
+      - appointments
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+          description: ''
+    post:
+      operationId: appointments_create
+      tags:
+      - appointments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+          description: ''
+  /api/appointments/{id}/:
+    get:
+      operationId: appointments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this appointment.
+        required: true
+      tags:
+      - appointments
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+          description: ''
+    put:
+      operationId: appointments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this appointment.
+        required: true
+      tags:
+      - appointments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+          description: ''
+    patch:
+      operationId: appointments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this appointment.
+        required: true
+      tags:
+      - appointments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAppointmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAppointmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAppointmentRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+          description: ''
+    delete:
+      operationId: appointments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this appointment.
+        required: true
+      tags:
+      - appointments
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/audit-logs/:
+    get:
+      operationId: audit_logs_list
+      tags:
+      - audit-logs
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/charge/:
+    post:
+      operationId: charge_create
+      tags:
+      - charge
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/clinical-notes/:
+    get:
+      operationId: clinical_notes_list
+      tags:
+      - clinical-notes
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicalNote'
+          description: ''
+    post:
+      operationId: clinical_notes_create
+      tags:
+      - clinical-notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalNote'
+          description: ''
+  /api/clinical-notes/{id}/:
+    get:
+      operationId: clinical_notes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - clinical-notes
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalNote'
+          description: ''
+  /api/clinical-notes/{id}/corrections/:
+    post:
+      operationId: clinical_notes_corrections_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - clinical-notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClinicalNoteRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalNote'
+          description: ''
+  /api/dashboard/stats/:
+    get:
+      operationId: dashboard_stats_retrieve
+      description: Small tenant-scoped summary payload for the authenticated home
+        screen.
+      tags:
+      - dashboard
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/discharge-requests/{id}/approve/:
+    post:
+      operationId: discharge_requests_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - discharge-requests
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              reason:
+                type: string
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Blocked by balance
+  /api/discharge-requests/{id}/reject/:
+    post:
+      operationId: discharge_requests_reject_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - discharge-requests
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              reason:
+                type: string
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Blocked by balance
+  /api/discharge-requests/pending/:
+    get:
+      operationId: discharge_requests_pending_retrieve
+      tags:
+      - discharge-requests
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/discharged-patients/:
+    get:
+      operationId: discharged_patients_retrieve
+      tags:
+      - discharged-patients
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/inventory/:
+    get:
+      operationId: inventory_list
+      tags:
+      - inventory
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+          description: ''
+    post:
+      operationId: inventory_create
+      tags:
+      - inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+          description: ''
+  /api/inventory/{id}/:
+    get:
+      operationId: inventory_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this inventory item.
+        required: true
+      tags:
+      - inventory
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+          description: ''
+    put:
+      operationId: inventory_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this inventory item.
+        required: true
+      tags:
+      - inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InventoryItemRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+          description: ''
+    patch:
+      operationId: inventory_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this inventory item.
+        required: true
+      tags:
+      - inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInventoryItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedInventoryItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedInventoryItemRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+          description: ''
+    delete:
+      operationId: inventory_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this inventory item.
+        required: true
+      tags:
+      - inventory
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/invitations/accept/:
+    post:
+      operationId: invitations_accept_create
+      tags:
+      - invitations
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/invoice/download/{token}/:
+    get:
+      operationId: invoice_download_retrieve
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoice
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/invoices/:
+    get:
+      operationId: invoices_list
+      tags:
+      - invoices
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/invoices/{invoice_id}/download/:
+    get:
+      operationId: invoices_download_retrieve
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - invoices
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/invoices/{invoice_id}/send-email/:
+    post:
+      operationId: invoices_send_email_create
+      parameters:
+      - in: path
+        name: invoice_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - invoices
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/invoices/generate/:
+    post:
+      operationId: invoices_generate_create
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/mar/:
+    get:
+      operationId: mar_list
+      tags:
+      - mar
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MAR'
+          description: ''
+    post:
+      operationId: mar_create
+      tags:
+      - mar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MAR'
+          description: ''
+  /api/mar/{id}/:
+    get:
+      operationId: mar_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - mar
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MAR'
+          description: ''
+    put:
+      operationId: mar_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - mar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MARRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MAR'
+          description: ''
+    patch:
+      operationId: mar_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - mar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMARRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMARRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMARRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MAR'
+          description: ''
+    delete:
+      operationId: mar_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - mar
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/medications/:
+    get:
+      operationId: medications_list
+      tags:
+      - medications
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Medication'
+          description: ''
+    post:
+      operationId: medications_create
+      tags:
+      - medications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medication'
+          description: ''
+  /api/medications/{id}/:
+    get:
+      operationId: medications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - medications
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medication'
+          description: ''
+    put:
+      operationId: medications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - medications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medication'
+          description: ''
+    patch:
+      operationId: medications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - medications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicationRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medication'
+          description: ''
+    delete:
+      operationId: medications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - medications
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/mfa/devices/{id}/confirm/:
+    post:
+      operationId: mfa_devices_confirm_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mfa
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/mfa/policy/:
+    get:
+      operationId: mfa_policy_retrieve
+      tags:
+      - mfa
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: mfa_policy_update
+      tags:
+      - mfa
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/mfa/setup/:
+    post:
+      operationId: mfa_setup_create
+      tags:
+      - mfa
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/:
+    get:
+      operationId: notifications_retrieve
+      tags:
+      - notifications
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/{id}/mark-read/:
+    patch:
+      operationId: notifications_mark_read_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/patient-bill/{patient_id}/:
+    get:
+      operationId: patient_bill_retrieve
+      parameters:
+      - in: path
+        name: patient_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - patient-bill
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientBill'
+          description: ''
+  /api/patient-bill/{patient_id}/payments/:
+    post:
+      operationId: patient_bill_payments_create
+      description: Record a patient payment and keep the bill and invoices in sync.
+      parameters:
+      - in: path
+        name: patient_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - patient-bill
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/patients/:
+    get:
+      operationId: patients_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - patients
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPatientList'
+          description: ''
+    post:
+      operationId: patients_create
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/patients/{id}/:
+    get:
+      operationId: patients_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - patients
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    put:
+      operationId: patients_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    patch:
+      operationId: patients_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/patients/{id}/request-discharge/:
+    post:
+      operationId: patients_request_discharge_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              reason:
+                type: string
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Blocked by balance
+  /api/patients/billing-search/:
+    get:
+      operationId: patients_billing_search_retrieve
+      description: Minimal patient identifier lookup for billing users only.
+      tags:
+      - patients
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/permissions/:
+    get:
+      operationId: permissions_retrieve
+      tags:
+      - permissions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/prescriptions/:
+    get:
+      operationId: prescriptions_list
+      tags:
+      - prescriptions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Prescription'
+          description: ''
+    post:
+      operationId: prescriptions_create
+      tags:
+      - prescriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prescription'
+          description: ''
+  /api/prescriptions/{id}/:
+    get:
+      operationId: prescriptions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - prescriptions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prescription'
+          description: ''
+    put:
+      operationId: prescriptions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - prescriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PrescriptionRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prescription'
+          description: ''
+    patch:
+      operationId: prescriptions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - prescriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPrescriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPrescriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPrescriptionRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prescription'
+          description: ''
+    delete:
+      operationId: prescriptions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - prescriptions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/prescriptions/due/:
+    get:
+      operationId: prescriptions_due_retrieve
+      tags:
+      - prescriptions
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prescription'
+          description: ''
+  /api/record-payment/:
+    post:
+      operationId: record_payment_create
+      tags:
+      - record-payment
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/admissions/:
+    get:
+      operationId: reports_admissions_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/census/:
+    get:
+      operationId: reports_census_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/discharges/:
+    get:
+      operationId: reports_discharges_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/occupancy/:
+    get:
+      operationId: reports_occupancy_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/outstanding/:
+    get:
+      operationId: reports_outstanding_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/reports/revenue/:
+    get:
+      operationId: reports_revenue_retrieve
+      tags:
+      - reports
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/roles/:
+    get:
+      operationId: roles_retrieve
+      tags:
+      - roles
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: roles_create
+      tags:
+      - roles
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/roles/{id}/:
+    put:
+      operationId: roles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - roles
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/sponsors/:
+    get:
+      operationId: sponsors_list
+      tags:
+      - sponsors
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sponsor'
+          description: ''
+    post:
+      operationId: sponsors_create
+      tags:
+      - sponsors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sponsor'
+          description: ''
+  /api/sponsors/{id}/:
+    get:
+      operationId: sponsors_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - sponsors
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sponsor'
+          description: ''
+    put:
+      operationId: sponsors_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - sponsors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SponsorRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sponsor'
+          description: ''
+    patch:
+      operationId: sponsors_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - sponsors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSponsorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSponsorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSponsorRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sponsor'
+          description: ''
+    delete:
+      operationId: sponsors_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - sponsors
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/staff/:
+    get:
+      operationId: staff_retrieve
+      tags:
+      - staff
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/{id}/:
+    put:
+      operationId: staff_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - staff
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/create/:
+    post:
+      operationId: staff_create_create
+      tags:
+      - staff
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenant-branding/:
+    get:
+      operationId: tenant_branding_retrieve
+      description: Return the small, safe branding payload needed before authentication.
+      tags:
+      - tenant-branding
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/tenant-config/:
+    get:
+      operationId: tenant_config_retrieve
+      tags:
+      - tenant-config
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: tenant_config_update
+      tags:
+      - tenant-config
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenant-plan/:
+    get:
+      operationId: tenant_plan_retrieve
+      tags:
+      - tenant-plan
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenant-plan/available/:
+    get:
+      operationId: tenant_plan_available_retrieve
+      tags:
+      - tenant-plan
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/:
+    get:
+      operationId: tenants_retrieve
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/{id}/extend-trial/:
+    post:
+      operationId: tenants_extend_trial_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/{id}/staff/:
+    get:
+      operationId: tenants_staff_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/{id}/toggle-status/:
+    patch:
+      operationId: tenants_toggle_status_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/create/:
+    post:
+      operationId: tenants_create_create
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tenants/stats/:
+    get:
+      operationId: tenants_stats_retrieve
+      tags:
+      - tenants
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: token_create
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/treatment-goals/:
+    get:
+      operationId: treatment_goals_list
+      tags:
+      - treatment-goals
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TreatmentGoal'
+          description: ''
+    post:
+      operationId: treatment_goals_create
+      tags:
+      - treatment-goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentGoal'
+          description: ''
+  /api/treatment-goals/{id}/:
+    get:
+      operationId: treatment_goals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment goal.
+        required: true
+      tags:
+      - treatment-goals
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentGoal'
+          description: ''
+    put:
+      operationId: treatment_goals_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment goal.
+        required: true
+      tags:
+      - treatment-goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TreatmentGoalRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentGoal'
+          description: ''
+    patch:
+      operationId: treatment_goals_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment goal.
+        required: true
+      tags:
+      - treatment-goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentGoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentGoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentGoalRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentGoal'
+          description: ''
+  /api/treatment-plans/:
+    get:
+      operationId: treatment_plans_list
+      tags:
+      - treatment-plans
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TreatmentPlan'
+          description: ''
+    post:
+      operationId: treatment_plans_create
+      tags:
+      - treatment-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlan'
+          description: ''
+  /api/treatment-plans/{id}/:
+    get:
+      operationId: treatment_plans_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment plan.
+        required: true
+      tags:
+      - treatment-plans
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlan'
+          description: ''
+    put:
+      operationId: treatment_plans_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment plan.
+        required: true
+      tags:
+      - treatment-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TreatmentPlanRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlan'
+          description: ''
+    patch:
+      operationId: treatment_plans_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this treatment plan.
+        required: true
+      tags:
+      - treatment-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentPlanRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlan'
+          description: ''
+  /api/user/permissions/:
+    get:
+      operationId: user_permissions_retrieve
+      tags:
+      - user
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissions:
+                    type: array
+                    items:
+                      type: string
+          description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      tags:
+      - users
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/me/:
+    get:
+      operationId: users_me_retrieve
+      tags:
+      - users
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/vital-ranges/:
+    get:
+      operationId: vital_ranges_list
+      tags:
+      - vital-ranges
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VitalNormalRange'
+          description: ''
+    post:
+      operationId: vital_ranges_create
+      tags:
+      - vital-ranges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalNormalRange'
+          description: ''
+  /api/vital-ranges/{id}/:
+    get:
+      operationId: vital_ranges_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital normal range.
+        required: true
+      tags:
+      - vital-ranges
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalNormalRange'
+          description: ''
+    put:
+      operationId: vital_ranges_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital normal range.
+        required: true
+      tags:
+      - vital-ranges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VitalNormalRangeRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalNormalRange'
+          description: ''
+    patch:
+      operationId: vital_ranges_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital normal range.
+        required: true
+      tags:
+      - vital-ranges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalNormalRangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalNormalRangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalNormalRangeRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalNormalRange'
+          description: ''
+    delete:
+      operationId: vital_ranges_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital normal range.
+        required: true
+      tags:
+      - vital-ranges
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/vitals/:
+    get:
+      operationId: vitals_list
+      tags:
+      - vitals
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VitalSign'
+          description: ''
+    post:
+      operationId: vitals_create
+      tags:
+      - vitals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalSign'
+          description: ''
+  /api/vitals/{id}/:
+    get:
+      operationId: vitals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital sign.
+        required: true
+      tags:
+      - vitals
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalSign'
+          description: ''
+    put:
+      operationId: vitals_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital sign.
+        required: true
+      tags:
+      - vitals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VitalSignRequest'
+        required: true
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalSign'
+          description: ''
+    patch:
+      operationId: vitals_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital sign.
+        required: true
+      tags:
+      - vitals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalSignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalSignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVitalSignRequest'
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VitalSign'
+          description: ''
+    delete:
+      operationId: vitals_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this vital sign.
+        required: true
+      tags:
+      - vitals
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /invoice/download/{token}/:
+    get:
+      operationId: invoice_download_retrieve_2
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - invoice
+      security:
+      - TenantJWTAuth: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AbnormalityLevelEnum:
+      enum:
+      - normal
+      - low
+      - moderate
+      - critical
+      type: string
+      description: |-
+        * `normal` - Normal
+        * `low` - Low
+        * `moderate` - Moderate
+        * `critical` - Critical
+    ActionEnum:
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - READ
+      - LOGIN
+      - LOGOUT
+      - SUSPEND
+      - REACTIVATE
+      type: string
+      description: |-
+        * `CREATE` - Create
+        * `UPDATE` - Update
+        * `DELETE` - Delete
+        * `READ` - Read
+        * `LOGIN` - Login
+        * `LOGOUT` - Logout
+        * `SUSPEND` - Suspend
+        * `REACTIVATE` - Reactivate
+    Admission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        length_of_stay_days:
+          type: string
+          readOnly: true
+        admission_number:
+          type: string
+          readOnly: true
+        intake_date:
+          type: string
+          format: date-time
+        discharge_date:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AdmissionStatusEnum'
+          readOnly: true
+        room:
+          type: string
+          maxLength: 100
+        bed:
+          type: string
+          maxLength: 100
+        primary_diagnosis:
+          type: string
+        psychiatric_diagnosis:
+          type: string
+        substance_use_history: {}
+        medical_history:
+          type: string
+        allergies: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        patient:
+          type: integer
+        tenant:
+          type: integer
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - admission_number
+      - created_at
+      - created_by
+      - discharge_date
+      - id
+      - intake_date
+      - length_of_stay_days
+      - patient
+      - patient_name
+      - status
+      - tenant
+      - updated_at
+    AdmissionRequest:
+      type: object
+      properties:
+        intake_date:
+          type: string
+          format: date-time
+        room:
+          type: string
+          maxLength: 100
+        bed:
+          type: string
+          maxLength: 100
+        primary_diagnosis:
+          type: string
+        psychiatric_diagnosis:
+          type: string
+        substance_use_history: {}
+        medical_history:
+          type: string
+        allergies: {}
+        patient:
+          type: integer
+      required:
+      - intake_date
+      - patient
+    AdmissionStatusEnum:
+      enum:
+      - admitted
+      - discharged
+      type: string
+      description: |-
+        * `admitted` - Admitted
+        * `discharged` - Discharged
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        clinician_name:
+          type: string
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        room:
+          type: string
+          maxLength: 100
+        status:
+          $ref: '#/components/schemas/AppointmentStatusEnum'
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        patient:
+          type: integer
+        clinician:
+          type: integer
+        tenant:
+          type: integer
+      required:
+      - clinician
+      - clinician_name
+      - created_at
+      - end_time
+      - id
+      - patient
+      - patient_name
+      - start_time
+      - updated_at
+    AppointmentRequest:
+      type: object
+      properties:
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        room:
+          type: string
+          maxLength: 100
+        status:
+          $ref: '#/components/schemas/AppointmentStatusEnum'
+        notes:
+          type: string
+          nullable: true
+        patient:
+          type: integer
+        clinician:
+          type: integer
+        tenant:
+          type: integer
+      required:
+      - clinician
+      - end_time
+      - patient
+      - start_time
+    AppointmentStatusEnum:
+      enum:
+      - scheduled
+      - confirmed
+      - checked_in
+      - in_progress
+      - completed
+      - cancelled
+      - no_show
+      type: string
+      description: |-
+        * `scheduled` - Scheduled
+        * `confirmed` - Confirmed
+        * `checked_in` - Checked In
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+        * `no_show` - No Show
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        actor:
+          type: integer
+          nullable: true
+        actor_username:
+          type: string
+          readOnly: true
+        actor_tenant_user_id:
+          type: string
+          readOnly: true
+        tenant:
+          type: integer
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        content_type:
+          type: integer
+          nullable: true
+        object_id:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        description:
+          type: string
+        ip_address:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor_tenant_user_id
+      - actor_username
+      - id
+      - timestamp
+    BillItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        item:
+          type: integer
+        item_name:
+          type: string
+          readOnly: true
+        category:
+          type: string
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        price_at_time:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        charged_at:
+          type: string
+          format: date-time
+          readOnly: true
+        administered_by:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+      required:
+      - administered_by
+      - category
+      - charged_at
+      - id
+      - item
+      - item_name
+      - price_at_time
+      - quantity
+      - subtotal
+    CareTypeEnum:
+      enum:
+      - inpatient
+      - outpatient
+      - day_patient
+      - new_referral
+      type: string
+      description: |-
+        * `inpatient` - Inpatient
+        * `outpatient` - Outpatient
+        * `day_patient` - Day Patient
+        * `new_referral` - New Referral
+    CategoryEnum:
+      enum:
+      - DRUG
+      - CONSUMABLE
+      - EQUIPMENT
+      - SERVICE
+      type: string
+      description: |-
+        * `DRUG` - Drug/Medication
+        * `CONSUMABLE` - Consumable
+        * `EQUIPMENT` - Medical Equipment
+        * `SERVICE` - Rehab Service
+    ClinicalNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date-time
+          readOnly: true
+        subjective:
+          type: string
+        objective:
+          type: string
+        assessment:
+          type: string
+        plan:
+          type: string
+        record_id:
+          type: string
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+          default: 1
+        correction_reason:
+          type: string
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+        patient:
+          type: integer
+        admission:
+          type: integer
+          nullable: true
+        clinician:
+          type: integer
+          readOnly: true
+        supersedes:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - assessment
+      - author_name
+      - clinician
+      - correction_reason
+      - date
+      - id
+      - objective
+      - patient
+      - plan
+      - record_id
+      - subjective
+      - supersedes
+      - tenant
+      - version
+    ClinicalNoteRequest:
+      type: object
+      properties:
+        subjective:
+          type: string
+          minLength: 1
+        objective:
+          type: string
+          minLength: 1
+        assessment:
+          type: string
+          minLength: 1
+        plan:
+          type: string
+          minLength: 1
+        patient:
+          type: integer
+        admission:
+          type: integer
+          nullable: true
+      required:
+      - assessment
+      - objective
+      - patient
+      - plan
+      - subjective
+    GenderEnum:
+      enum:
+      - M
+      - F
+      - O
+      type: string
+      description: |-
+        * `M` - Male
+        * `F` - Female
+        * `O` - Other
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_id:
+          type: string
+          readOnly: true
+          nullable: true
+        name:
+          type: string
+          maxLength: 200
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        current_stock:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        reorder_level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - category
+      - id
+      - name
+      - product_id
+      - unit_price
+    InventoryItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        current_stock:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        reorder_level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - category
+      - name
+      - unit_price
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        patient_id:
+          type: integer
+          readOnly: true
+        patient_phone:
+          type: string
+          readOnly: true
+        tenant_name:
+          type: string
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+        generated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/InvoiceStatusEnum'
+        pdf_file:
+          type: string
+          format: uri
+          nullable: true
+        cover_letter_text:
+          type: string
+          nullable: true
+        sponsor_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        sponsor_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        sponsor_phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        download_token:
+          type: string
+          format: uuid
+          readOnly: true
+        token_expiry:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        bill:
+          type: integer
+      required:
+      - bill
+      - download_token
+      - due_date
+      - generated_at
+      - id
+      - invoice_number
+      - patient_id
+      - patient_name
+      - patient_phone
+      - period_end
+      - period_start
+      - sent_at
+      - tenant_name
+      - token_expiry
+      - total_amount
+    InvoiceRequest:
+      type: object
+      properties:
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/InvoiceStatusEnum'
+        pdf_file:
+          type: string
+          format: binary
+          nullable: true
+        cover_letter_text:
+          type: string
+          nullable: true
+        sponsor_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        sponsor_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        sponsor_phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        bill:
+          type: integer
+      required:
+      - bill
+      - due_date
+      - period_end
+      - period_start
+      - total_amount
+    InvoiceStatusEnum:
+      enum:
+      - draft
+      - sent
+      - paid
+      - overdue
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `sent` - Sent
+        * `paid` - Paid
+        * `overdue` - Overdue
+    MAR:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        given_by_name:
+          type: string
+          readOnly: true
+        medication_name:
+          type: string
+          readOnly: true
+        patient:
+          type: integer
+          readOnly: true
+        administered_at:
+          type: string
+          format: date-time
+        dose:
+          type: string
+          maxLength: 100
+        route:
+          type: string
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        prescription:
+          type: integer
+        given_by:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - dose
+      - given_by
+      - given_by_name
+      - id
+      - medication_name
+      - patient
+      - prescription
+      - route
+    MARRequest:
+      type: object
+      properties:
+        administered_at:
+          type: string
+          format: date-time
+        dose:
+          type: string
+          minLength: 1
+          maxLength: 100
+        route:
+          type: string
+          minLength: 1
+          maxLength: 100
+        notes:
+          type: string
+        prescription:
+          type: integer
+      required:
+      - dose
+      - prescription
+      - route
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        strength:
+          type: string
+          maxLength: 100
+        form:
+          type: string
+          maxLength: 100
+        category:
+          type: string
+          maxLength: 100
+        is_controlled_substance:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - form
+      - id
+      - name
+      - strength
+      - tenant
+    MedicationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        strength:
+          type: string
+          minLength: 1
+          maxLength: 100
+        form:
+          type: string
+          minLength: 1
+          maxLength: 100
+        category:
+          type: string
+          maxLength: 100
+        is_controlled_substance:
+          type: boolean
+      required:
+      - form
+      - name
+      - strength
+    PaginatedPatientList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+    PatchedAdmissionRequest:
+      type: object
+      properties:
+        intake_date:
+          type: string
+          format: date-time
+        room:
+          type: string
+          maxLength: 100
+        bed:
+          type: string
+          maxLength: 100
+        primary_diagnosis:
+          type: string
+        psychiatric_diagnosis:
+          type: string
+        substance_use_history: {}
+        medical_history:
+          type: string
+        allergies: {}
+        patient:
+          type: integer
+    PatchedAppointmentRequest:
+      type: object
+      properties:
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        room:
+          type: string
+          maxLength: 100
+        status:
+          $ref: '#/components/schemas/AppointmentStatusEnum'
+        notes:
+          type: string
+          nullable: true
+        patient:
+          type: integer
+        clinician:
+          type: integer
+        tenant:
+          type: integer
+    PatchedInventoryItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        current_stock:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        reorder_level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+    PatchedMARRequest:
+      type: object
+      properties:
+        administered_at:
+          type: string
+          format: date-time
+        dose:
+          type: string
+          minLength: 1
+          maxLength: 100
+        route:
+          type: string
+          minLength: 1
+          maxLength: 100
+        notes:
+          type: string
+        prescription:
+          type: integer
+    PatchedMedicationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        strength:
+          type: string
+          minLength: 1
+          maxLength: 100
+        form:
+          type: string
+          minLength: 1
+          maxLength: 100
+        category:
+          type: string
+          maxLength: 100
+        is_controlled_substance:
+          type: boolean
+    PatchedPatientRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        address:
+          type: string
+          nullable: true
+        emergency_contact_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        emergency_contact_phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        next_of_kin_relationship:
+          type: string
+          nullable: true
+          maxLength: 100
+        national_id:
+          type: string
+          nullable: true
+          maxLength: 100
+        hiv_status:
+          type: string
+          nullable: true
+          maxLength: 30
+        status:
+          $ref: '#/components/schemas/PatientStatusEnum'
+        care_type:
+          $ref: '#/components/schemas/CareTypeEnum'
+        preferred_visit_days: {}
+        expected_frequency:
+          type: string
+          maxLength: 100
+        referral_source:
+          type: string
+          maxLength: 200
+        referring_doctor:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        discharged_at:
+          type: string
+          format: date-time
+          nullable: true
+    PatchedPrescriptionRequest:
+      type: object
+      properties:
+        dose:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          minLength: 1
+          description: 'For example: every 8 hours'
+          maxLength: 100
+        duration_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        start_at:
+          type: string
+          format: date-time
+        instructions:
+          type: string
+        status:
+          $ref: '#/components/schemas/PrescriptionStatusEnum'
+        patient:
+          type: integer
+        medication:
+          type: integer
+    PatchedSponsorRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        relationship:
+          $ref: '#/components/schemas/RelationshipEnum'
+        company_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        patient:
+          type: integer
+    PatchedTreatmentGoalRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TreatmentGoalStatusEnum'
+        progress_percent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        progress_note:
+          type: string
+    PatchedTreatmentPlanRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        diagnosis_summary:
+          type: string
+        status:
+          $ref: '#/components/schemas/TreatmentPlanStatusEnum'
+        start_date:
+          type: string
+          format: date
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        patient:
+          type: integer
+        admission:
+          type: integer
+          nullable: true
+    PatchedVitalNormalRangeRequest:
+      type: object
+      properties:
+        metric:
+          type: string
+          minLength: 1
+          maxLength: 40
+        low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+    PatchedVitalSignRequest:
+      type: object
+      properties:
+        date_measured:
+          type: string
+          format: date-time
+        systolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        diastolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        heart_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        respiratory_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,1})?$
+          nullable: true
+        oxygen_saturation:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        blood_sugar:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        pain_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        height:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        abnormality_level:
+          $ref: '#/components/schemas/AbnormalityLevelEnum'
+        abnormal_values: {}
+        patient:
+          type: integer
+    Patient:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        address:
+          type: string
+          nullable: true
+        emergency_contact_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        emergency_contact_phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        next_of_kin_relationship:
+          type: string
+          nullable: true
+          maxLength: 100
+        national_id:
+          type: string
+          nullable: true
+          maxLength: 100
+        hiv_status:
+          type: string
+          nullable: true
+          maxLength: 30
+        intake_date:
+          type: string
+          format: date
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PatientStatusEnum'
+        care_type:
+          $ref: '#/components/schemas/CareTypeEnum'
+        preferred_visit_days: {}
+        expected_frequency:
+          type: string
+          maxLength: 100
+        referral_source:
+          type: string
+          maxLength: 200
+        referring_doctor:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        patient_id:
+          type: string
+          readOnly: true
+          nullable: true
+        discharged_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - created_by
+      - date_of_birth
+      - first_name
+      - gender
+      - id
+      - intake_date
+      - last_name
+      - patient_id
+      - phone
+      - tenant
+      - updated_at
+    PatientBill:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient:
+          type: integer
+        patient_name:
+          type: string
+          readOnly: true
+        total_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillItem'
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - items
+      - patient
+      - patient_name
+      - updated_at
+    PatientRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        address:
+          type: string
+          nullable: true
+        emergency_contact_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        emergency_contact_phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        next_of_kin_relationship:
+          type: string
+          nullable: true
+          maxLength: 100
+        national_id:
+          type: string
+          nullable: true
+          maxLength: 100
+        hiv_status:
+          type: string
+          nullable: true
+          maxLength: 30
+        status:
+          $ref: '#/components/schemas/PatientStatusEnum'
+        care_type:
+          $ref: '#/components/schemas/CareTypeEnum'
+        preferred_visit_days: {}
+        expected_frequency:
+          type: string
+          maxLength: 100
+        referral_source:
+          type: string
+          maxLength: 200
+        referring_doctor:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        discharged_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - date_of_birth
+      - first_name
+      - gender
+      - last_name
+      - phone
+    PatientStatusEnum:
+      enum:
+      - registered
+      - active
+      - inactive
+      - discharged
+      - transferred
+      type: string
+      description: |-
+        * `registered` - Registered / New
+        * `active` - Active
+        * `inactive` - Inactive
+        * `discharged` - Discharged
+        * `transferred` - Transferred
+    Prescription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        medication_name:
+          type: string
+          readOnly: true
+        prescribing_clinician_name:
+          type: string
+          readOnly: true
+        ends_at:
+          type: string
+          format: date-time
+          readOnly: true
+        dose:
+          type: string
+          maxLength: 100
+        frequency:
+          type: string
+          description: 'For example: every 8 hours'
+          maxLength: 100
+        duration_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        start_at:
+          type: string
+          format: date-time
+        instructions:
+          type: string
+        status:
+          $ref: '#/components/schemas/PrescriptionStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+        patient:
+          type: integer
+        medication:
+          type: integer
+        prescribing_clinician:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - dose
+      - duration_days
+      - ends_at
+      - frequency
+      - id
+      - medication
+      - medication_name
+      - patient
+      - patient_name
+      - prescribing_clinician
+      - prescribing_clinician_name
+      - tenant
+    PrescriptionRequest:
+      type: object
+      properties:
+        dose:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          minLength: 1
+          description: 'For example: every 8 hours'
+          maxLength: 100
+        duration_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        start_at:
+          type: string
+          format: date-time
+        instructions:
+          type: string
+        status:
+          $ref: '#/components/schemas/PrescriptionStatusEnum'
+        patient:
+          type: integer
+        medication:
+          type: integer
+      required:
+      - dose
+      - duration_days
+      - frequency
+      - medication
+      - patient
+    PrescriptionStatusEnum:
+      enum:
+      - active
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `active` - Active
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+    RelationshipEnum:
+      enum:
+      - family
+      - employer
+      - self
+      - government
+      - ngo
+      - other
+      type: string
+      description: |-
+        * `family` - Family Member
+        * `employer` - Employer
+        * `self` - Self
+        * `government` - Government
+        * `ngo` - NGO
+        * `other` - Other
+    Sponsor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        relationship:
+          $ref: '#/components/schemas/RelationshipEnum'
+        company_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        patient:
+          type: integer
+        tenant:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - id
+      - patient
+      - phone
+      - relationship
+      - tenant
+    SponsorRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        relationship:
+          $ref: '#/components/schemas/RelationshipEnum'
+        company_name:
+          type: string
+          nullable: true
+          maxLength: 200
+        notes:
+          type: string
+          nullable: true
+        patient:
+          type: integer
+      required:
+      - full_name
+      - patient
+      - phone
+      - relationship
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TreatmentGoal:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TreatmentGoalStatusEnum'
+        progress_percent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        progress_note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+        treatment_plan:
+          type: integer
+          readOnly: true
+        updated_by:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - description
+      - id
+      - tenant
+      - treatment_plan
+      - updated_at
+      - updated_by
+    TreatmentGoalRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TreatmentGoalStatusEnum'
+        progress_percent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        progress_note:
+          type: string
+      required:
+      - description
+    TreatmentGoalStatusEnum:
+      enum:
+      - not_started
+      - in_progress
+      - achieved
+      - discontinued
+      type: string
+      description: |-
+        * `not_started` - Not started
+        * `in_progress` - In progress
+        * `achieved` - Achieved
+        * `discontinued` - Discontinued
+    TreatmentPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        goals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreatmentGoal'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        diagnosis_summary:
+          type: string
+        status:
+          $ref: '#/components/schemas/TreatmentPlanStatusEnum'
+        start_date:
+          type: string
+          format: date
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+        patient:
+          type: integer
+        admission:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - created_by
+      - goals
+      - id
+      - patient
+      - start_date
+      - tenant
+      - title
+      - updated_at
+    TreatmentPlanRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        diagnosis_summary:
+          type: string
+        status:
+          $ref: '#/components/schemas/TreatmentPlanStatusEnum'
+        start_date:
+          type: string
+          format: date
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        patient:
+          type: integer
+        admission:
+          type: integer
+          nullable: true
+      required:
+      - patient
+      - start_date
+      - title
+    TreatmentPlanStatusEnum:
+      enum:
+      - draft
+      - active
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        is_superuser:
+          type: boolean
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
+        role:
+          type: string
+          readOnly: true
+        is_rehab_admin:
+          type: string
+          readOnly: true
+        tenant_name:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - is_rehab_admin
+      - role
+      - tenant_name
+      - username
+    VitalNormalRange:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        metric:
+          type: string
+          maxLength: 40
+        low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        tenant:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - critical_high
+      - critical_low
+      - high
+      - id
+      - low
+      - metric
+      - tenant
+    VitalNormalRangeRequest:
+      type: object
+      properties:
+        metric:
+          type: string
+          minLength: 1
+          maxLength: 40
+        low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        critical_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+      required:
+      - critical_high
+      - critical_low
+      - high
+      - low
+      - metric
+    VitalSign:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recorded_by_name:
+          type: string
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        date_measured:
+          type: string
+          format: date-time
+        systolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        diastolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        heart_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        respiratory_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,1})?$
+          nullable: true
+        oxygen_saturation:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        blood_sugar:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        pain_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        height:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        bmi:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        abnormality_level:
+          $ref: '#/components/schemas/AbnormalityLevelEnum'
+        abnormal_values: {}
+        patient:
+          type: integer
+        tenant:
+          type: integer
+          readOnly: true
+        recorded_by:
+          type: integer
+          readOnly: true
+      required:
+      - bmi
+      - date_measured
+      - id
+      - patient
+      - patient_name
+      - recorded_at
+      - recorded_by
+      - recorded_by_name
+      - tenant
+    VitalSignRequest:
+      type: object
+      properties:
+        date_measured:
+          type: string
+          format: date-time
+        systolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        diastolic_bp:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        heart_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        respiratory_rate:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,1})?$
+          nullable: true
+        oxygen_saturation:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        blood_sugar:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        pain_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        height:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        abnormality_level:
+          $ref: '#/components/schemas/AbnormalityLevelEnum'
+        abnormal_values: {}
+        patient:
+          type: integer
+      required:
+      - date_measured
+      - patient
+  securitySchemes:
+    TenantJWTAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
