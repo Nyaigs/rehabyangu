@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import api, { normalizeTenantSlug, resolveMediaUrl } from '../api/client';
 import { displayRole as toDisplayRole } from '../utils/roles';
+import { useIdleTimeout } from '../hooks/useIdleTimeout';
 
 export interface TenantBranding {
   primary_color?: string;
@@ -178,6 +179,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const isSuperAdmin = Boolean(user?.is_superuser);
   const isRehabAdmin = Boolean(user?.is_rehab_admin || isSuperAdmin);
+
+  // TRD 7.2 — 10-min inactivity auto-logout with a 9-min warning.
+  // The warning UI is provided by the consuming app via a custom event so
+  // AuthContext stays framework-agnostic; apps can listen and show a modal.
+  useIdleTimeout({
+    enabled: Boolean(user),
+    onWarn: () => window.dispatchEvent(new CustomEvent('auth:idle-warning')),
+    onLogout: () => {
+      window.dispatchEvent(new CustomEvent('auth:idle-logout'));
+      void logout();
+    },
+  });
 
   const value: AuthContextType = {
     user,
