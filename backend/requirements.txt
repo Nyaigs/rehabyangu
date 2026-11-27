@@ -12,3 +12,4 @@ redis>=5.0
 python-dotenv>=1.0
 reportlab
 Pillow>=10.0
+drf-spectacular>=0.28,<0.29

@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
     'corsheaders',
     # Our apps
     'patients',
@@ -123,12 +124,23 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
         'rest_framework.throttling.ScopedRateThrottle',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_THROTTLE_RATES': {
         'user': '60/minute',
         'login': '10/minute',
         'invitation_accept': '5/minute',
         'refresh': '30/minute',
     },
+}
+
+# OpenAPI / drf-spectacular
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'RehabYangu API',
+    'DESCRIPTION': 'Multi-tenant rehabilitation & mental-health management API.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'^/api/',
 }
 
 # JWT settings (optional, can add expiry)

@@ -33,6 +33,8 @@ from users.views import TenantAuditLogView
 from users.views_mfa import MfaSetupView, MfaConfirmView, MfaPolicyView
 from django.conf import settings
 from django.conf.urls.static import static
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from rest_framework.permissions import IsAdminUser
 
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patient')
@@ -78,6 +80,10 @@ urlpatterns = [
     path('api/mfa/policy/', MfaPolicyView.as_view(), name='mfa-policy'),
     path('api/audit-logs/', TenantAuditLogView.as_view(), name='tenant_audit_logs'),
     path('media/<path:path>', TenantMediaView.as_view(), name='tenant-media'),
+    # OpenAPI schema — restricted to staff/admin, not public.
+    path('api/schema/', SpectacularAPIView.as_view(permission_classes=[IsAdminUser]), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema', permission_classes=[IsAdminUser]), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema', permission_classes=[IsAdminUser]), name='redoc'),
 ]
 
 if settings.DEBUG:
