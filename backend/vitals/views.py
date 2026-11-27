@@ -46,5 +46,9 @@ class VitalNormalRangeViewSet(viewsets.ModelViewSet):
     serializer_class = VitalNormalRangeSerializer
     def get_permissions(self):
         return [permissions.IsAuthenticated(), IsInTenant(), HasFeature('vitals'), HasPermission('clinical.write' if self.action in ('create', 'update', 'partial_update') else 'clinical.read')]
-    def get_queryset(self): return VitalNormalRange.objects.filter(tenant=self.request.tenant)
+    def get_queryset(self):
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant is None:  # drf-spectacular schema-generation path
+            return VitalNormalRange.objects.none()
+        return VitalNormalRange.objects.filter(tenant=tenant)
     def perform_create(self, serializer): serializer.save(tenant=self.request.tenant)

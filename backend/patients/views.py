@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, OpenApiResponse  # A5-1c discharge
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -206,7 +207,10 @@ class TreatmentPlanViewSet(TenantScopedClinicalViewSet):
     serializer_class = TreatmentPlanSerializer
 
     def get_queryset(self):
-        queryset = TreatmentPlan.objects.filter(tenant=self.request.tenant).select_related('patient', 'admission').prefetch_related('goals')
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant is None:  # drf-spectacular schema-generation path
+            return TreatmentPlan.objects.none()
+        queryset = TreatmentPlan.objects.filter(tenant=tenant).select_related('patient', 'admission').prefetch_related('goals')
         patient_id = self.request.query_params.get('patient')
         return queryset.filter(patient_id=patient_id) if patient_id else queryset
 
@@ -223,7 +227,10 @@ class TreatmentGoalViewSet(TenantScopedClinicalViewSet):
     serializer_class = TreatmentGoalSerializer
 
     def get_queryset(self):
-        queryset = TreatmentGoal.objects.filter(tenant=self.request.tenant).select_related('treatment_plan')
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant is None:  # drf-spectacular schema-generation path
+            return TreatmentGoal.objects.none()
+        queryset = TreatmentGoal.objects.filter(tenant=tenant).select_related('treatment_plan')
         plan_id = self.request.query_params.get('treatment_plan')
         return queryset.filter(treatment_plan_id=plan_id) if plan_id else queryset
 
@@ -240,6 +247,7 @@ class TreatmentGoalViewSet(TenantScopedClinicalViewSet):
         goal = serializer.save(updated_by=self.request.user)
         audit(actor=self.request.user, tenant=self.request.tenant, action='UPDATE', request=self.request, instance=goal, description=f'Updated treatment goal {goal.id}.')
 
+@extend_schema(request={'type': 'object', 'properties': {'reason': {'type': 'string'}}}, responses={200: OpenApiResponse(description='OK'), 400: OpenApiResponse(description='Blocked by balance')})
 class RequestDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -309,6 +317,7 @@ class RequestDischargeView(APIView):
             'status': 'pending'
         }, status=status.HTTP_201_CREATED)
 
+@extend_schema(request={'type': 'object', 'properties': {'reason': {'type': 'string'}}}, responses={200: OpenApiResponse(description='OK'), 400: OpenApiResponse(description='Blocked by balance')})
 class ApproveDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -390,6 +399,7 @@ class ApproveDischargeView(APIView):
 
         return Response({'message': 'Discharge approved successfully', 'patient_status': 'discharged'})
 
+@extend_schema(request={'type': 'object', 'properties': {'reason': {'type': 'string'}}}, responses={200: OpenApiResponse(description='OK'), 400: OpenApiResponse(description='Blocked by balance')})
 class RejectDischargeView(APIView):
     permission_classes = [IsAuthenticated]
 

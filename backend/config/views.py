@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
 from django.http import FileResponse, Http404
 from rest_framework import serializers, generics, permissions
+from drf_spectacular.utils import extend_schema  # A5-1c exclude
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import TenantMembership
@@ -52,6 +53,7 @@ class CurrentUserView(generics.RetrieveAPIView):
         return self.request.user
 
 
+@extend_schema(exclude=True)  # A5-1c exclude — serves files, no JSON body
 class TenantMediaView(APIView):
     """Serve only branding files belonging to the authenticated facility.
 

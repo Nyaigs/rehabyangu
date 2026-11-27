@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers, status
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer  # A5-1c
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -66,6 +67,7 @@ class TenantTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     throttle_scope = 'login'
+    serializer_class = TokenObtainPairSerializer  # A5-1c
 
     def post(self, request):
         tenant, is_platform_admin = self.get_tenant(request)
@@ -82,13 +84,9 @@ class TenantTokenObtainPairView(APIView):
     @staticmethod
     def get_tenant(request):
         slug = (request.headers.get('X-Tenant') or '').strip().lower()
-        if not slug:
-            # Hostname fallback is a development convenience only.
-            # In production, X-Tenant is required to prevent tenant enumeration.
-            if settings.DEBUG:
-                host = request.get_host().split(':')[0].split('.')
-                if len(host) >= 3 and host[0] not in ('www', 'localhost', '127'):
-                    slug = host[0]
+        # X-Tenant is mandatory. No hostname fallback: preventing tenant
+        # enumeration from the Host header is a security requirement in every
+        # environment, not just production.
         if slug == PLATFORM_WORKSPACE_SLUG:
             return None, True
         return (Tenant.objects.filter(subdomain=slug).first(), False) if slug else (None, False)
@@ -98,6 +96,7 @@ class TenantTokenRefreshView(APIView):
     permission_classes = [AllowAny]
     throttle_scope = 'refresh'
     authentication_classes = []
+    serializer_class = TokenRefreshSerializer  # A5-1c
 
     def post(self, request):
         try:

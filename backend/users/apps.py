@@ -7,3 +7,4 @@ class UsersConfig(AppConfig):
     def ready(self):
         import users.signals
         import users.audit_signals
+        import users.schema  # noqa: F401 — registers drf-spectacular auth extension

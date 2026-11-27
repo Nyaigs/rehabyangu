@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.core.cache import cache
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema  # A5-1c
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasPermission
@@ -20,6 +21,7 @@ def invalidate_role_members(role):
         cache.delete(f'user_perms_{user_id}_{tenant_id}')
 
 
+@extend_schema(responses={200: {'type': 'object', 'properties': {'permissions': {'type': 'array', 'items': {'type': 'string'}}}}})  # A5-1c
 class UserPermissionsView(APIView):
     permission_classes = [IsAuthenticated]
 
